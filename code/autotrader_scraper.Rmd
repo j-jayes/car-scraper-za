@@ -1,0 +1,172 @@
+---
+title: "autotrader_scraper"
+author: "JJayes"
+date: "27/03/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(pacman)
+
+p_load(tidyverse, rvest, glue, lubridate)
+
+```
+
+### Purpose
+
+script to scrape autotrader website for adverts
+
+Comprises some functions to gather a list of adverts and then scrape the information from the adverts, tidy the output and save it.
+
+### How many pages of adverts?
+
+```{r}
+
+url <- "https://www.autotrader.co.za/car-for-sale/renault/sandero/66kw/25936938"
+
+html <- read_html(url)
+
+get_ad_text_autotrader <- function(ad_url){
+  # store the html from the page
+  html <- read_html(ad_url)
+  
+  message(glue("Getting ad from {ad_url}"))
+  
+  # site
+  site <- "Autotrader"
+  
+  # this needs work
+  # seller type
+  # seller_type <- html %>% 
+  #   html_node(".e-dealer-link") %>% 
+  #   html_text()
+  
+  # title
+  title <- html %>% 
+  html_node(".e-listing-title") %>% 
+  html_text() 
+  
+  # price need to fix
+  price <- html %>% 
+  html_node(".e-price") %>%
+  html_text() %>% 
+  str_remove_all("R") %>% 
+  str_squish() %>% 
+  parse_number(locale = locale(grouping_mark = " "))
+  
+  # text
+  text <- html %>% 
+  html_nodes(".e-restrict-height") %>% 
+  html_text() %>% 
+  str_squish()
+  
+    # info table
+  info_table_1 <- html %>% 
+  html_nodes(".b-striped-specs") %>% 
+  html_nodes(".row .col-6") %>% 
+  html_text() %>% 
+  tibble(title = .) %>% 
+  mutate(value = lead(title)) %>% 
+  mutate(flag = row_number()%%2) %>% 
+  filter(flag == 1) %>% 
+  select(-flag)
+  
+  info_table_2_title <- html %>% 
+  html_nodes(".b-quick-specs") %>% 
+  html_nodes("li")   %>%  
+  html_attr("title") %>% 
+  tibble(title = .)
+  
+  info_table_2_values <- html %>% 
+  html_nodes(".b-quick-specs") %>% 
+  html_nodes("li")   %>%  
+  html_text() %>% 
+  str_squish() %>% 
+  tibble(value = .)  
+  
+  info_table <- cbind(info_table_2_title, info_table_2_values) %>% as_tibble() %>% rbind(info_table_1)
+    
+  # specific location
+  #   html %>% 
+  # html_node(".col-6") %>% 
+  # html_text() %>% 
+  # str_squish() %>% 
+  # str_remove("\\| Number of km from you?.*")
+  
+  # photos
+  n_photos <- html %>% 
+  html_node(".e-image-counter") %>% 
+  html_text() %>% 
+  str_remove("1\\/") %>% 
+  parse_number()
+  
+  # views
+  # n_views <- "NA"
+  
+  # date of ad
+  # missing for autotrader
+  # ad_date <- as.character(now()- html %>% 
+  # html_node(".vip-stats .creation-date") %>% 
+  # html_text() %>% 
+  # str_to_lower() %>% 
+  # str_remove(" ago") %>% 
+  # str_replace_all("a |an ", "1 ") %>% 
+  # duration()) 
+  
+  # ad_date safe is included in case there is a problem with the syntax above and can be calculated from the scrape time function
+  # ad_date_safe <- html %>% 
+  # html_node(".vip-stats .creation-date") %>% 
+  # html_text() 
+  
+  # seller name
+  seller_name <-  html %>% 
+    html_node(".e-dealer-link") %>% 
+    html_text()
+  
+  # seller age
+  # seller_age <- "missing on autotrader"
+
+  # all time ads
+  # n_all_time_ads <- "missing on autotrader"
+  
+  # active ads
+  # to be edited upon completion of scrape
+  n_active_ads <- 
+  # url for dealer
+    str_c("www.autotrader.co.za", html %>% 
+    html_node(".e-dealer-link") %>% 
+    html_attr("href"))
+  
+  # location
+  location <- html %>%  
+    html_node(".b-breadcrumbs") %>% 
+    html_text() %>% 
+    str_squish() %>% 
+    str_remove(".*Cars For Sale")
+  
+  
+  
+  # scrape date and time
+  scrape_time <- Sys.time() %>% as.character() # can add it str_replace_all('[[:punct:] ]+', "_")
+  
+  # varlist <- c(title, price, text, n_photos, n_views, ad_date, location, seller_age, n_all_time_ads, n_active_ads, scrape_time)
+  
+  # nest(tibble(title, price, text, n_photos, n_views, ad_date, location, seller_age, n_all_time_ads, n_active_ads, scrape_time), 
+  #      nested = c(title, price, text, n_photos, n_views, ad_date, location, seller_age, n_all_time_ads, n_active_ads, scrape_time))
+  
+  tibble(site, title, price, text, info_table, n_photos, n_views, ad_date, seller_name, location, seller_age, n_all_time_ads, n_active_ads, scrape_time)
+  
+}
+```
+
+
+```{r}
+
+get_ad_text_autotrader(html)
+
+```
+
+
+
