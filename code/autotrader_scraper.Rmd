@@ -37,12 +37,6 @@ get_ad_text_autotrader <- function(ad_url){
   # site
   site <- "Autotrader"
   
-  # this needs work
-  # seller type
-  # seller_type <- html %>% 
-  #   html_node(".e-dealer-link") %>% 
-  #   html_text()
-  
   # title
   title <- html %>% 
   html_node(".e-listing-title") %>% 
@@ -86,7 +80,25 @@ get_ad_text_autotrader <- function(ad_url){
   str_squish() %>% 
   tibble(value = .)  
   
-  info_table <- cbind(info_table_2_title, info_table_2_values) %>% as_tibble() %>% rbind(info_table_1)
+  info_table_3 <- html %>% 
+  html_nodes(".b-breadcrumbs") %>% 
+  html_nodes("li")   %>%  
+  html_text() %>% 
+  str_squish() %>% 
+  tibble(value = .)  %>% 
+  mutate(title = c("home", 
+                   "cars_for_sale",
+                   "location",
+                   "make",
+                   "model",
+                   "power",
+                   "ad_number")) %>% 
+    relocate(title, .before = "value") %>% 
+    filter(title %in% c("make", "model"))
+  
+  b-breadcrumbs
+  
+  info_table <- cbind(info_table_2_title, info_table_2_values) %>% as_tibble() %>% rbind(info_table_1, info_table_3)
     
   # specific location
   #   html %>% 
