@@ -342,9 +342,11 @@ get_ad_text_gumtree <- function(ad_url){
 #' 
 #' ### Map through each ad_url
 #' 
-## -----------------------------------------------------------------------------------------------------------
+## ---- warning=F---------------------------------------------------------------------------------------------
 # mapping through each url
 ads_nested <- list_of_links %>%
+  distinct(ad_url, .keep_all = T) %>% 
+  head(10) %>% 
     mutate(text = map(ad_url, possibly(get_ad_text_gumtree, "failed")))
 
 ads <- ads_nested %>% 
@@ -359,6 +361,8 @@ ads <- ads_nested %>%
 st <- format(Sys.time(), "%Y-%m-%d-%I-%M-%p")
 
 write_rds(ads, paste0("data/raw/ads_", st, ".rds"), compress = "gz")
+
+write.csv(ads, "data/latest/ads_latest.csv")
 
 
 #' 
