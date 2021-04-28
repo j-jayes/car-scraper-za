@@ -24,6 +24,56 @@ Comprises some functions to gather a list of adverts and then scrape the informa
 
 ```{r}
 
+value <- "https://www.autotrader.co.za/cars-for-sale"
+
+# get the number of pages
+get_last_page_autotrader <- function(value){
+  
+  message(glue("Getting page numbers from {value}"))
+  
+  html <- read_html(value)
+  
+   n_pages <- html %>% 
+    html_nodes(".gm-show-inline-block") %>% 
+     html_nodes("li") %>% 
+     html_text() %>% 
+     as_tibble() %>% 
+     tail(1) %>% 
+     str_remove_all(" ") %>% 
+     parse_number()
+  
+   # total pages
+  n_pages
+  
+}
+
+pages <- get_last_page_autotrader("https://www.autotrader.co.za/cars-for-sale")
+
+list_of_pages <- str_c("https://www.autotrader.co.za/cars-for-sale?pagenumber=", 1:pages) %>% as_tibble()
+
+```
+
+### List of links on each page
+
+```{r}
+get_ad_links <- function(link){
+  html <- read_html("https://www.autotrader.co.za/cars-for-sale?pagenumber=6")
+  
+  message(glue("Getting links from {link}"))
+  
+  html %>% 
+    html_nodes(".b-result-tile") %>% 
+    html_nodes(".e-available") %>% 
+    html_attr("href")
+}
+
+```
+
+
+### Scraper
+
+```{r}
+
 url <- "https://www.autotrader.co.za/car-for-sale/renault/sandero/66kw/25936938"
 
 html <- read_html(url)
@@ -95,18 +145,9 @@ get_ad_text_autotrader <- function(ad_url){
                    "ad_number")) %>% 
     relocate(title, .before = "value") %>% 
     filter(title %in% c("make", "model"))
-  
-  b-breadcrumbs
-  
+
   info_table <- cbind(info_table_2_title, info_table_2_values) %>% as_tibble() %>% rbind(info_table_1, info_table_3)
     
-  # specific location
-  #   html %>% 
-  # html_node(".col-6") %>% 
-  # html_text() %>% 
-  # str_squish() %>% 
-  # str_remove("\\| Number of km from you?.*")
-  
   # photos
   n_photos <- html %>% 
   html_node(".e-image-counter") %>% 
@@ -114,61 +155,25 @@ get_ad_text_autotrader <- function(ad_url){
   str_remove("1\\/") %>% 
   parse_number()
   
-  # views
-  # n_views <- "NA"
-  
-  # date of ad
-  # missing for autotrader
-  # ad_date <- as.character(now()- html %>% 
-  # html_node(".vip-stats .creation-date") %>% 
-  # html_text() %>% 
-  # str_to_lower() %>% 
-  # str_remove(" ago") %>% 
-  # str_replace_all("a |an ", "1 ") %>% 
-  # duration()) 
-  
-  # ad_date safe is included in case there is a problem with the syntax above and can be calculated from the scrape time function
-  # ad_date_safe <- html %>% 
-  # html_node(".vip-stats .creation-date") %>% 
-  # html_text() 
-  
   # seller name
   seller_name <-  html %>% 
     html_node(".e-dealer-link") %>% 
     html_text()
   
-  # seller age
-  # seller_age <- "missing on autotrader"
-
-  # all time ads
-  # n_all_time_ads <- "missing on autotrader"
-  
-  # active ads
-  # to be edited upon completion of scrape
   n_active_ads <- 
   # url for dealer
-    str_c("www.autotrader.co.za", html %>% 
+    str_c("https://www.autotrader.co.za", html %>% 
     html_node(".e-dealer-link") %>% 
-    html_attr("href"))
-  
-  # location
-  location <- html %>%  
-    html_node(".b-breadcrumbs") %>% 
+    html_attr("href")) %>% 
+    read_html() %>% 
+    html_nodes(".e-results-total") %>% 
     html_text() %>% 
-    str_squish() %>% 
-    str_remove(".*Cars For Sale")
-  
-  
-  
+    parse_number()
+
   # scrape date and time
   scrape_time <- Sys.time() %>% as.character() # can add it str_replace_all('[[:punct:] ]+', "_")
   
-  # varlist <- c(title, price, text, n_photos, n_views, ad_date, location, seller_age, n_all_time_ads, n_active_ads, scrape_time)
-  
-  # nest(tibble(title, price, text, n_photos, n_views, ad_date, location, seller_age, n_all_time_ads, n_active_ads, scrape_time), 
-  #      nested = c(title, price, text, n_photos, n_views, ad_date, location, seller_age, n_all_time_ads, n_active_ads, scrape_time))
-  
-  tibble(site, title, price, text, info_table, n_photos, n_views, ad_date, seller_name, location, seller_age, n_all_time_ads, n_active_ads, scrape_time)
+  tibble(site, title, price, text, info_table, n_photos, n_views, ad_date, seller_name, location, n_active_ads, scrape_time)
   
 }
 ```

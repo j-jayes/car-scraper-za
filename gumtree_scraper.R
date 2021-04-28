@@ -1,11 +1,11 @@
----
-title: "gumtree_scraper"
-author: "JJayes"
-date: "27/03/2021"
-output: html_document
----
-
-```{r setup, include=FALSE}
+#' ---
+#' title: "gumtree_scraper"
+#' author: "JJayes"
+#' date: "27/03/2021"
+#' output: html_document
+#' ---
+#' 
+## ----setup, include=FALSE-----------------------------------------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
@@ -14,42 +14,42 @@ library(glue)
 library(lubridate)
 
 # to get this as a R script to put online I can use:
-knitr::purl("code/gumtree_scraper.Rmd", documentation = 2)
-
-```
-
-# Purpose
-
-Scrape gumtree automatically and store the scraped data on github.
-
-## Strategy
-
-Get 1000 ads from each province every day.
-
-### Questions
-
-- What should I get from each advert?
-
-#### Starting with list of adverts
-
-We have 9 provinces. For each landing page there consists a stub, a province, a page, a tag and a page.
-
-For [example](https://www.gumtree.co.za/s-cars-bakkies/eastern-cape/page-2/v1c9077l3100197p2)
-
-The stub is: `https://www.gumtree.co.za/s-cars-bakkies/`
-
-The province is: `eastern-cape/`
-
-The page is: `page-2/`
-
-The tag is: `v1c9077l3100197`
-
-The final page is: `p2`
-
-We will make a tibble with the provinces and tags, which are unique.
+# knitr::purl("code/gumtree_scraper.Rmd", documentation = 2)
 
 
-```{r}
+#' 
+#' # Purpose
+#' 
+#' Scrape gumtree automatically and store the scraped data on github.
+#' 
+#' ## Strategy
+#' 
+#' Get 1000 ads from each province every day.
+#' 
+#' ### Questions
+#' 
+#' - What should I get from each advert?
+#' 
+#' #### Starting with list of adverts
+#' 
+#' We have 9 provinces. For each landing page there consists a stub, a province, a page, a tag and a page.
+#' 
+#' For [example](https://www.gumtree.co.za/s-cars-bakkies/eastern-cape/page-2/v1c9077l3100197p2)
+#' 
+#' The stub is: `https://www.gumtree.co.za/s-cars-bakkies/`
+#' 
+#' The province is: `eastern-cape/`
+#' 
+#' The page is: `page-2/`
+#' 
+#' The tag is: `v1c9077l3100197`
+#' 
+#' The final page is: `p2`
+#' 
+#' We will make a tibble with the provinces and tags, which are unique.
+#' 
+#' 
+## -----------------------------------------------------------------------------------------------------------
 df <- tibble(
   
   province = c("gauteng",
@@ -81,15 +81,15 @@ df <- df %>%
                           "/",
                           tag,
                           "p1"))
-```
 
-### Function to find the last page
-
-We can get a maximum of 1000 ads from each province - but we need to know how many pages of adverts there are.
-
-This function gets the number of adverts, divides it by 20 and adds one to get the number of pages of adverts. If it is more than 50 pages, the function returns 50 as that is the maximum we can scrape.
-
-```{r}
+#' 
+#' ### Function to find the last page
+#' 
+#' We can get a maximum of 1000 ads from each province - but we need to know how many pages of adverts there are.
+#' 
+#' This function gets the number of adverts, divides it by 20 and adds one to get the number of pages of adverts. If it is more than 50 pages, the function returns 50 as that is the maximum we can scrape.
+#' 
+## -----------------------------------------------------------------------------------------------------------
 # get the number of pages
 get_last_page <- function(value){
   
@@ -112,24 +112,24 @@ get_last_page <- function(value){
   pages_data
   
 }
-```
 
-Apply function to each province's landing page and collect the number of pages.
-
-```{r}
+#' 
+#' Apply function to each province's landing page and collect the number of pages.
+#' 
+## -----------------------------------------------------------------------------------------------------------
 df <- df %>% 
   # here we use the possibly function to get the last page, and if it fails
   mutate(last_page = map(home_url, possibly(get_last_page, "failed")))
 
 # unlist if for some reason. Problem this won't work if we have an error I think, becasue we can't combine the two types.
 df <- df %>% mutate(last_page = unlist(last_page))
-```
 
-### Create list of pages to look at for finding ads
-
-Look at this nice function! It takes the province, the last page and the tag and then makes a list of pages that we can scrape to get all the adverts. I've called it stick because it sticks strings together.
-
-```{r}
+#' 
+#' ### Create list of pages to look at for finding ads
+#' 
+#' Look at this nice function! It takes the province, the last page and the tag and then makes a list of pages that we can scrape to get all the adverts. I've called it stick because it sticks strings together.
+#' 
+## -----------------------------------------------------------------------------------------------------------
 
 stick <- function(province, last_page, tag){
   
@@ -143,24 +143,24 @@ stick <- function(province, last_page, tag){
         1:last_page) %>% as_tibble() %>% nest(data = everything())
   
 }
-```
 
-#### I get to use pmap!! How cool!!
-
-Here we take the data frame of provine information above and we map across province, last_page and tag so that we can the correct number of pages to grab ads from. Ah so nice!
-
-```{r}
+#' 
+#' #### I get to use pmap!! How cool!!
+#' 
+#' Here we take the data frame of provine information above and we map across province, last_page and tag so that we can the correct number of pages to grab ads from. Ah so nice!
+#' 
+## -----------------------------------------------------------------------------------------------------------
 df <- df %>% 
   mutate(pages = pmap(list(province, last_page, tag), stick)) %>% unnest(pages) %>% unnest(data) %>% 
   rename(page_url = value)
 
-```
 
-Now we have our nice list of pages, we can scrape them for the advert links.
-
-### Function to get the ad links from the list of pages
-
-```{r}
+#' 
+#' Now we have our nice list of pages, we can scrape them for the advert links.
+#' 
+#' ### Function to get the ad links from the list of pages
+#' 
+## -----------------------------------------------------------------------------------------------------------
 
 get_ad_links <- function(page_url){
   html <- read_html(page_url)
@@ -172,11 +172,11 @@ get_ad_links <- function(page_url){
     html_attr("href")
 }
 
-```
 
-### Iterate through list of links
-
-```{r}
+#' 
+#' ### Iterate through list of links
+#' 
+## -----------------------------------------------------------------------------------------------------------
 # creates a list of links from each page
 list_of_links <- df %>%
   head(10) %>% 
@@ -189,22 +189,22 @@ list_of_links <-list_of_links %>%
   mutate(ad_url = str_c("https://www.gumtree.co.za", ad_url),
          # keep an ad number - always useful to have an index.
          ad_number = row_number())
-```
 
-### Save list of links
-
-We put in today's date and the time to make it easy to keep track of.
-
-```{r}
+#' 
+#' ### Save list of links
+#' 
+#' We put in today's date and the time to make it easy to keep track of.
+#' 
+## -----------------------------------------------------------------------------------------------------------
 st <- format(Sys.time(), "%Y-%m-%d-%I-%M-%p")
 
 write.csv(list_of_links, paste0("data/links/", st, ".csv", sep = ""))
 
-```
 
-# Scraping the adverts from the ad urls.
-
-```{r}
+#' 
+#' # Scraping the adverts from the ad urls.
+#' 
+## -----------------------------------------------------------------------------------------------------------
 
 get_ad_text_gumtree <- function(ad_url){
   # store the html from the page
@@ -338,11 +338,11 @@ get_ad_text_gumtree <- function(ad_url){
   
 }
 
-```
 
-### Map through each ad_url
-
-```{r}
+#' 
+#' ### Map through each ad_url
+#' 
+## -----------------------------------------------------------------------------------------------------------
 # mapping through each url
 ads_nested <- list_of_links %>%
     mutate(text = map(ad_url, possibly(get_ad_text_gumtree, "failed")))
@@ -351,14 +351,14 @@ ads <- ads_nested %>%
   unnest(text) %>% 
   unnest(data) %>% 
   pivot_wider(names_from = info_cols, values_from = info_values)
-```
 
-### Write data to output
-
-```{r}
+#' 
+#' ### Write data to output
+#' 
+## -----------------------------------------------------------------------------------------------------------
 st <- format(Sys.time(), "%Y-%m-%d-%I-%M-%p")
 
 write_rds(ads, paste0("data/raw/ads_", st, ".rds"), compress = "gz")
 
-```
 
+#' 
