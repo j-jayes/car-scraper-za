@@ -179,6 +179,7 @@ get_ad_links <- function(page_url){
 ```{r}
 # creates a list of links from each page
 list_of_links <- df %>%
+  head(10) %>% 
   # the possibly here means it will store the error and continue should it hit a problem
   mutate(ad_url = map(page_url, possibly(get_ad_links, otherwise = "failed")))
 
@@ -345,6 +346,7 @@ get_ad_text_gumtree <- function(ad_url){
 # mapping through each url
 ads_nested <- list_of_links %>%
   distinct(ad_url, .keep_all = T) %>% 
+  head(10) %>% 
     mutate(text = map(ad_url, possibly(get_ad_text_gumtree, "failed")))
 
 ads <- ads_nested %>% 
