@@ -344,6 +344,7 @@ get_ad_text_gumtree <- function(ad_url){
 ```{r, warning=F}
 # mapping through each url
 ads_nested <- list_of_links %>%
+  distinct(ad_url, .keep_all = T) %>% 
     mutate(text = map(ad_url, possibly(get_ad_text_gumtree, "failed")))
 
 ads <- ads_nested %>% 
