@@ -179,7 +179,6 @@ get_ad_links <- function(page_url){
 ## -----------------------------------------------------------------------------------------------------------
 # creates a list of links from each page
 list_of_links <- df %>%
-  head(10) %>% 
   # the possibly here means it will store the error and continue should it hit a problem
   mutate(ad_url = map(page_url, possibly(get_ad_links, otherwise = "failed")))
 
@@ -346,7 +345,6 @@ get_ad_text_gumtree <- function(ad_url){
 # mapping through each url
 ads_nested <- list_of_links %>%
   distinct(ad_url, .keep_all = T) %>% 
-  head(10) %>% 
     mutate(text = map(ad_url, possibly(get_ad_text_gumtree, "failed")))
 
 ads <- ads_nested %>% 
@@ -362,7 +360,10 @@ st <- format(Sys.time(), "%Y-%m-%d-%I-%M-%p")
 
 write_rds(ads, paste0("data/raw/ads_", st, ".rds"), compress = "gz")
 
+#' 
+#' Stores data in folder called latest as a csv for the shiny app to pull in.
+#' 
+## -----------------------------------------------------------------------------------------------------------
 write.csv(ads, "data/latest/ads_latest.csv")
-
 
 #' 
