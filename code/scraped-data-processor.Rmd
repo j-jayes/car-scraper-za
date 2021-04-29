@@ -36,7 +36,7 @@ df <- df %>%
          text) %>% 
   mutate(province = str_to_title(province))
 
-write_rds(df, "data/latest/ads_latest_clean.rds")
+write_rds(df, "data/latest/ads_latest_clean.rds", compress = "gz")
 
 ```
 
