@@ -11,6 +11,10 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(glue)
 
+df <- read.csv("https://raw.githubusercontent.com/j-jayes/car-scraper-za/81284c470a8a77f8b8eea669c7c70fda7aebf635/data/latest/ads_latest.csv")
+
+write.csv(df, "data/latest/ads_latest.csv")
+
 ```
 
 ```{r}
@@ -50,6 +54,6 @@ df <- df %>%
 
 
 ```{r}
-write.csv(df, "data/latest/ads_latest.csv")
+write.csv(df, "data/latest/ads_latest_clean.csv")
 ```
 
