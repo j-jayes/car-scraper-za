@@ -48,8 +48,7 @@ df <- df %>%
 df <- df %>% 
   mutate(province = str_replace(province, "-", " "),
          province = str_replace(province, "\\+", "-"),
-         province = str_to_title(province)) %>% 
-  mutate(test = "test")
+         province = str_to_title(province))
 
 #' 
 #' 
