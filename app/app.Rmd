@@ -17,7 +17,10 @@ library(plotly)
 library(glue)
 # library(bslib)
 
-df <- read_rds()
+df <- read.csv("https://raw.githubusercontent.com/j-jayes/car-scraper-za/main/data/latest/ads_latest_clean.csv")
+
+df <- df %>% 
+  as_tibble()
 
 theme_set(theme_light())
 
@@ -101,6 +104,8 @@ output$plot1 <- renderPlot({
 
 ### Boxplot of price by model
 
+Things still to do - fix the axes and the labels.
+
 ```{r}
 # renderPlotly({
 #   
@@ -122,25 +127,61 @@ output$plot1 <- renderPlot({
 # })
 
 
+# renderPlotly({
+#   
+#    g <- df %>% 
+#      filter(make_model %in% input$make_model,
+#             province %in% input$province,
+#             between(year, input$year[1], input$year[2]),
+#             between(kilometers, input$kilometers[1], input$kilometers[2])) %>% 
+#     ggplot(aes(factor(make_model), price, fill = make_model))  + 
+#       # geom_violin() +
+#       geom_boxplot() +
+#       scale_y_continuous(labels = scales::unit_format(unit = "R ")) +
+#       scale_fill_brewer(palette = "Dark2", name = "Make and Model") +
+#       theme(legend.position = "none") +
+#       coord_cartesian(ylim = c(0, input$price_range)) +
+#      labs(x = "",
+#           y = "")
+#    
+#    ggplotly(g, tooltip = c("text", "size"))
+# })
+
 renderPlotly({
-  
-   g <- df %>% 
-     filter(make_model %in% input$make_model,
+
+fig <- df %>%
+  filter(make_model %in% input$make_model,
             province %in% input$province,
             between(year, input$year[1], input$year[2]),
             between(kilometers, input$kilometers[1], input$kilometers[2])) %>% 
-    ggplot(aes(factor(make_model), price, fill = make_model))  + 
-      # geom_violin() +
-      geom_boxplot(width=0.1, alpha = .5) +
-      scale_y_continuous(labels = scales::unit_format(unit = "R ")) +
-      scale_fill_brewer(palette = "Dark2", name = "Make and Model") +
-      theme(legend.position = "bottom") +
-      coord_cartesian(ylim = c(0, input$price_range)) +
-     labs(x = "",
-          y = "")
-   
-   ggplotly(g, tooltip = c("text", "size"))
+  plot_ly(
+    x = ~ make_model,
+    y = ~ price,
+    split = ~ make_model,
+    type = 'violin',
+    box = list(
+      visible = T
+    ),
+    meanline = list(
+      visible = T
+    )
+  ) 
+
+fig <- fig %>%
+  layout(
+    xaxis = list(
+      title = "Make and Model"
+    ),
+    yaxis = list(
+      title = "Price",
+      zeroline = F
+    )
+  )
+
+fig
+
 })
+
 ```
 
 Column {data-width=800}
@@ -154,12 +195,11 @@ renderTable({
                             province %in% input$province,
                             between(year, input$year[1], input$year[2]),
                             between(kilometers, input$kilometers[1], input$kilometers[2])) %>% 
-    relocate(link:seller_type, .after = text) %>% 
     mutate(title = glue("<a href={ad_url}>{title}</a>"),
            price = format(price, big.mark = ",", scientific = F),
            kilometers = format(kilometers, big.mark = ",", scientific = F),
            year = format(year, scientific = F)) %>% 
-    select(title, price, kilometers, year, province, colour, text) %>% 
+    select(title, price, kilometers, year, province, colour) %>% 
     rename_all(
       funs(
         stringr::str_to_title(.) %>%
@@ -168,5 +208,7 @@ renderTable({
   table
 }, sanitize.text.function = function(x) x)
 
+df %>% 
+  count(make_model, sort = T)
 
 ```

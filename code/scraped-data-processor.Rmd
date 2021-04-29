@@ -14,13 +14,16 @@ library(glue)
 ```
 
 ```{r}
-
 df <- read.csv("data/latest/ads_latest.csv")
 
 df <- df %>% 
   as_tibble() %>% 
   janitor::clean_names()
+```
 
+What do we need?
+
+```{r}
 df <- df %>% 
   mutate(make_model = glue("{make} {model}"),
          price = round(price),
@@ -33,10 +36,20 @@ df <- df %>%
          colour,
          year,
          ad_url,
-         text) %>% 
-  mutate(province = str_to_title(province))
+         text)
+```
 
-write_rds(df, "data/latest/ads_latest_clean.rds", compress = "gz")
+Processing province
 
+```{r}
+df <- df %>% 
+  mutate(province = str_replace(province, "-", " "),
+         province = str_replace(province, "\\+", "-"),
+         province = str_to_title(province))
+```
+
+
+```{r}
+write.csv(df, "data/latest/ads_latest.csv")
 ```
 
