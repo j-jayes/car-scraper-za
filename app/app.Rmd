@@ -1,0 +1,172 @@
+---
+title: "Gumtree Car Price Explorer v2"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    source_code: embed
+runtime: shiny
+    
+---
+
+```{r global, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+library(shiny)
+library(plotly)
+library(glue)
+# library(bslib)
+
+df <- read_rds()
+
+theme_set(theme_light())
+
+```
+
+Column {.sidebar}
+-----------------------------------------------------------------------
+
+
+![](lmcq_1.png){#id .class width=100%}
+**Select Inputs:**
+
+```{r}
+selectizeInput("make_model", label = "Make and Model:",
+            choices = unique(df$make_model), 
+            selected = c("Volkswagen Polo", "Hyundai i20", "BMW 3 Series"),
+            multiple = T)
+
+selectizeInput("province", label = "Province:",
+            choices = unique(df$province), 
+            selected = c("Western Cape", "Gauteng", "KwaZulu-Natal"),
+            multiple = T)
+
+sliderInput("kilometers", label = "Kilometers:",
+            min = 0, max = 300000, value = c(20000, 100000), step = 10000)
+
+sliderInput("year", label = "Year:",
+            min = 1990, max = 2020, value = c(2010, 2020), step = 1)
+
+sliderInput("price_range", label = "Max Price on y-axis:",
+            min = 0, max = 5000000, value = 500000, step = 10000)
+
+```
+
+Each point in the plot on the top is one car advert.
+Drag a box around the points of interest to get the advert in the table to the right. 
+
+```{r}
+# Reactive that returns the whole dataset if there is no brush
+selectedData <- reactive({
+  data <- brushedPoints(df, input$plot1_brush)
+  if (nrow(data) == 0)
+    data <- df %>% filter(make_model %in% input$make_model,
+                          province %in% input$province,
+                          between(year, input$year[1], input$year[2]),
+                          between(kilometers, input$kilometers[1], input$kilometers[2]))
+  
+  data
+})
+```
+
+Column {data-width=1200}
+-----------------------------------------------------------------------
+
+### Price vs. Kilometers {data-width=1200}
+
+```{r}
+
+plotOutput("plot1", brush = brushOpts(id = "plot1_brush"))
+
+output$plot1 <- renderPlot({
+  
+  df %>% 
+     filter(make_model %in% input$make_model,
+            province %in% input$province,
+            between(year, input$year[1], input$year[2]),
+                          between(kilometers, input$kilometers[1], input$kilometers[2])) %>% 
+      ggplot(aes(kilometers, price, colour = make_model)) + 
+      geom_point() +
+      geom_smooth() +
+      scale_x_continuous(labels = scales::comma_format()) +
+      scale_y_continuous(labels = scales::unit_format(unit = "R ")) +
+      coord_cartesian(ylim = c(0, input$price_range)) +
+      theme(legend.position = "bottom") +
+      scale_color_brewer(palette = "Dark2", name = "Make and Model") +
+    labs(x = "",
+         y = "")
+  
+})
+```
+
+### Boxplot of price by model
+
+```{r}
+# renderPlotly({
+#   
+#    g <- df %>% 
+#      filter(make_model %in% input$make_model,
+#             province %in% input$province,
+#             between(year, input$year[1], input$year[2]),
+#             between(kilometers, input$kilometers[1], input$kilometers[2])) %>% 
+#     ggplot(aes(factor(make_model), price, fill = make_model))  + 
+#       geom_boxplot() +
+#       scale_y_continuous(labels = scales::unit_format(unit = "R ")) +
+#       scale_fill_brewer(palette = "Dark2", name = "Make and Model") +
+#       theme(legend.position = "bottom") +
+#       coord_cartesian(ylim = c(0, input$price_range)) +
+#      labs(x = "",
+#           y = "")
+#    
+#    ggplotly(g, tooltip = c("text", "size"))
+# })
+
+
+renderPlotly({
+  
+   g <- df %>% 
+     filter(make_model %in% input$make_model,
+            province %in% input$province,
+            between(year, input$year[1], input$year[2]),
+            between(kilometers, input$kilometers[1], input$kilometers[2])) %>% 
+    ggplot(aes(factor(make_model), price, fill = make_model))  + 
+      # geom_violin() +
+      geom_boxplot(width=0.1, alpha = .5) +
+      scale_y_continuous(labels = scales::unit_format(unit = "R ")) +
+      scale_fill_brewer(palette = "Dark2", name = "Make and Model") +
+      theme(legend.position = "bottom") +
+      coord_cartesian(ylim = c(0, input$price_range)) +
+     labs(x = "",
+          y = "")
+   
+   ggplotly(g, tooltip = c("text", "size"))
+})
+```
+
+Column {data-width=800}
+-----------------------------------------------------------------------
+
+### Car Advert Details {data-width=800}
+
+```{r}
+renderTable({
+  table <- selectedData() %>% filter(make_model %in% input$make_model,
+                            province %in% input$province,
+                            between(year, input$year[1], input$year[2]),
+                            between(kilometers, input$kilometers[1], input$kilometers[2])) %>% 
+    relocate(link:seller_type, .after = text) %>% 
+    mutate(title = glue("<a href={ad_url}>{title}</a>"),
+           price = format(price, big.mark = ",", scientific = F),
+           kilometers = format(kilometers, big.mark = ",", scientific = F),
+           year = format(year, scientific = F)) %>% 
+    select(title, price, kilometers, year, province, colour, text) %>% 
+    rename_all(
+      funs(
+        stringr::str_to_title(.) %>%
+        stringr::str_replace_all(., '_', ' ')))
+  
+  table
+}, sanitize.text.function = function(x) x)
+
+
+```
