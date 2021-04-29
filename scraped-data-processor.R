@@ -12,6 +12,8 @@ library(tidyverse)
 library(glue)
 library(janitor)
 
+# knitr::purl("code/scraped-data-processor.Rmd", documentation = 2)
+
 
 #' 
 ## -----------------------------------------------------------------------------------------------------------
@@ -46,7 +48,8 @@ df <- df %>%
 df <- df %>% 
   mutate(province = str_replace(province, "-", " "),
          province = str_replace(province, "\\+", "-"),
-         province = str_to_title(province))
+         province = str_to_title(province)) %>% 
+  mutate(test = "test")
 
 #' 
 #' 
