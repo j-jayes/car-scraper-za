@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(glue)
 
+# knitr::purl("code/scraped-data-processor.Rmd", documentation = 2)
+
 ```
 
 ```{r}
@@ -51,6 +53,5 @@ df <- df %>%
 
 ```{r}
 write.csv(df, "data/latest/ads_latest_clean.csv")
-
 ```
 
