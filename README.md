@@ -6,6 +6,8 @@ I have a [shiny app](https://jonathan-jayes.shinyapps.io/gumtree-price-explorer/
 
 I want to improve this shiny app to include adverts from other websites.
 
+I also want to use the [Pins package](https://pins.rstudio.com/) to keep more data available for the app to use. Currently it only shows ads scraped in the past day.
+
 ## Process
 
 Currently I am working on creating some web scraping scripts for the different websites and then automating them with github actions.
