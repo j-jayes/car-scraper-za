@@ -347,9 +347,11 @@ ads_nested <- list_of_links %>%
   distinct(ad_url, .keep_all = T) %>% 
     mutate(text = map(ad_url, possibly(get_ad_text_gumtree, "failed")))
 
-ads <- ads_nested %>% 
-  unnest(text) %>% 
-  unnest(data) %>% 
+ads <- ads_nested %>%
+  filter(text != "failed") %>%
+  unnest(cols = c(text)) %>%
+  unnest(text) %>%
+  unnest(data) %>%
   pivot_wider(names_from = info_cols, values_from = info_values)
 
 #' 

@@ -92,7 +92,7 @@ output$plot1 <- renderPlot({
       geom_point() +
       geom_smooth() +
       scale_x_continuous(labels = scales::comma_format()) +
-      scale_y_continuous(labels = scales::unit_format(unit = "R ")) +
+      scale_y_continuous(labels = scales::unit_format(prefix = "R ")) +
       coord_cartesian(ylim = c(0, input$price_range)) +
       theme(legend.position = "bottom") +
       scale_color_brewer(palette = "Dark2", name = "Make and Model") +

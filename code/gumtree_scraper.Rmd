@@ -147,7 +147,7 @@ stick <- function(province, last_page, tag){
 
 #### I get to use pmap!! How cool!!
 
-Here we take the data frame of provine information above and we map across province, last_page and tag so that we can the correct number of pages to grab ads from. Ah so nice!
+Here we take the data frame of province information above and we map across province, last_page and tag so that we can the correct number of pages to grab ads from. Ah so nice!
 
 ```{r}
 df <- df %>% 
