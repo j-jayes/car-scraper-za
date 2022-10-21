@@ -3,23 +3,305 @@ title: "ML modelling"
 format: html
 ---
 
-## Quarto
-
-Quarto enables you to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>.
-
-## Running Code
-
-When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
-
 ```{r}
-1 + 1
+library(tidyverse)
+
+setwd(here::here())
 ```
 
-You can add options to executable code like this 
-
 ```{r}
-#| echo: false
-2 * 2
+files <- list.files(path = "data/raw", pattern = ".rds") %>% str_c("data/raw/", .)
 ```
 
-The `echo: false` option disables the printing of code (only output is displayed).
+```{r}
+df_list <- map(files, read_rds)
+
+df <- bind_rows(df_list, .id = 'date_num')
+
+# df %>%
+#   slice_sample(n = 3000) %>%
+#   write_rds("data/test_df.rds")
+```
+
+
+```{r}
+library(glue)
+
+df <- df %>% 
+  janitor::clean_names()
+
+df <- df %>% 
+  mutate(across(c(year, kilometers), parse_number))
+
+# df %>% head(100) %>% view()
+
+df <- df %>% 
+  mutate(make_model = glue("{make} {model}"),
+         price = round(price),
+         year = round(year)) %>% 
+  select(title,
+         price,
+         make_model,
+         seller_type,
+         province,
+         kilometers,
+         colour,
+         year,
+         n_photos,
+         body_type,
+         fuel_type,
+         transmission,
+         ad_url,
+         text)
+
+
+df <- df %>% 
+  mutate(province = str_replace(province, "-", " "),
+         province = str_replace(province, "\\+", "-"),
+         province = str_to_title(province))
+
+df %>%
+  slice_sample(n = 10000) %>%
+  ggplot(aes(year, price)) +
+  geom_point()
+```
+
+### EDA
+
+```{r}
+plot_price_cts <- function(var){
+  
+  df %>% 
+    slice_sample(n = 10000) %>% 
+    ggplot(aes({{ var }}, price)) +
+    geom_smooth() +
+    geom_hline(yintercept = 0, lty = 2) +
+    scale_y_continuous(labels = scales::dollar_format(prefix = "R"))
+    # labs(title = glue::glue("Relationship between {var_lab} and price"))
+  
+}
+
+plot_price_cts(var = year)
+
+plot_price_cts(var = kilometers)
+```
+
+
+```{r}
+plot_price_factor <- function(.data, var){
+  .data %>% 
+    mutate(across({{ var }}, .fns = ~ fct_lump(., 7)),
+           across({{ var }}, .fns = ~ fct_reorder(., price, median))) %>% 
+    ggplot(aes(price, {{ var }}, fill = {{ var }})) +
+    geom_boxplot() +
+    scale_x_continuous(labels = scales::dollar_format(prefix = "R"))
+  
+}
+
+df %>% 
+  slice_sample(n = 2000) %>% 
+  plot_price_factor(fuel_type)
+
+df %>% slice_sample(n = 2000) %>% 
+  plot_price_factor(make_model)
+```
+
+
+### Models
+
+```{r}
+library(tidymodels)
+
+df_small <- df %>% 
+  drop_na() %>% 
+  slice_sample(n = 500000) %>%
+  select(-c(text, ad_url)) %>% 
+  mutate(price = log(price))
+
+split <- initial_split(df_small)
+
+df_train <- training(split)
+df_test <- testing(split)
+
+df_folds <- vfold_cv(df_train, v = 5)
+```
+
+```{r}
+df_small %>% 
+  count(make_model)
+```
+
+
+
+```{r}
+svm_rec <- recipe(price ~ ., data = df_train) %>%
+  update_role(title, new_role = "id") %>%
+  step_other(where(is.factor), threshold = .01) %>%
+  step_zv(all_predictors()) %>%
+  step_novel(all_nominal_predictors()) %>% 
+  step_dummy(all_nominal_predictors(), one_hot = T) %>%
+  step_normalize(all_numeric_predictors())
+
+# svm_rec %>% prep() %>% juice() %>% view()
+```
+
+```{r}
+# svm_rec %>% 
+#   prep() %>% 
+#   juice()
+```
+
+```{r}
+log_grid <- grid_regular(penalty(), levels = 5)
+```
+
+
+```{r}
+log_spec <- linear_reg(engine = "glmnet", mode = "regression", penalty = tune(), mixture = 0)
+
+wf_log <- workflow(svm_rec, log_spec)
+
+log_tune <- tune_grid(object = wf_log, resamples = df_folds, grid = log_grid)
+
+log_tune %>% 
+  collect_metrics() %>% 
+  ggplot(aes(factor(penalty), mean, fill = .metric)) +
+  geom_col() +
+  facet_wrap(~ .metric)
+```
+
+```{r}
+log_wf <- finalize_workflow(wf_log, select_best(log_tune, "rsq"))
+
+
+
+log_pred <- last_fit(log_wf, split)
+  
+log_pred %>% 
+  collect_metrics()
+
+log_pred %>% 
+  collect_predictions() %>% 
+  slice_sample(n = 5000) %>% 
+  ggplot(aes(x = price, y = .pred)) +
+  geom_point(alpha = .3, colour = "midnightblue") +
+  geom_abline()
+```
+
+#### What is important??
+
+```{r}
+library(vip)
+
+log_pred %>%
+  extract_fit_parsnip() %>%
+  vi() %>%
+  mutate(
+    Importance = abs(Importance),
+    Variable = fct_reorder(Variable, Importance)
+  ) %>%
+  ggplot(aes(x = Importance, y = Variable, fill = Sign)) +
+  geom_col() +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(y = NULL)
+```
+
+### Export model
+
+```{r}
+final_lasso_model <- fit(log_wf, df_small)
+
+# setwd(here::here())
+
+final_lasso_model %>% write_rds("models/final_lasso_model.rds", compress = "gz")
+```
+
+
+
+
+
+### linear reg
+
+```{r}
+lin_reg_spec <- linear_reg()
+
+lin_reg_wf <- workflow(svm_rec, lin_reg_spec)
+
+fit <- fit_resamples(lin_reg_wf, resamples = df_small_folds, metrics = metric_set(rmse, rsq))
+
+fit %>% 
+  collect_metrics()
+```
+
+
+```{r}
+final_fit <- fit(lin_reg_wf, df_small)
+
+final_fit %>%
+  extract_fit_parsnip() %>%
+  tidy() %>%
+  filter(term != "(Intercept)") %>%
+  mutate(cat = case_when(
+    str_detect(term, "make_model") ~ "Make & model",
+    str_detect(term, "colour") ~ "Colour",
+    str_detect(term, "province") ~ "Province",
+    TRUE ~ "Numeric"
+  )) %>%
+  mutate(term = str_remove(term, "make_model|colour|province")) %>%
+  mutate(term = fct_reorder(term, estimate)) %>%
+  ggplot(aes(estimate, term, fill = estimate > 0)) +
+  geom_col() +
+  facet_wrap(~cat, scales = "free_y")
+```
+
+
+### Text recipe
+
+```{r}
+library(textrecipes)
+
+df_text <- df %>% 
+  select(text, price) %>% 
+  drop_na() %>% 
+  slice_sample(n = 20000)
+
+text_rec <- recipe(price ~ ., data = df_text) %>%
+  step_mutate(text = str_to_lower(text)) %>% 
+  step_text_normalization(text) %>%
+  step_tokenize(text, token = "words") %>% 
+  # step_stopwords(text) %>% 
+  step_tokenfilter(text) %>% 
+  step_tf(text)
+
+text_rec %>%
+  prep() %>%
+  juice()
+
+text_spec <- svm_linear(mode = "regression", engine = "LiblineaR")
+
+text_wf <- workflow(text_rec, 
+                    text_spec)
+
+text_fit <- fit(text_wf, df_text)
+```
+
+
+
+```{r}
+text_fit %>% 
+  extract_fit_parsnip() %>% 
+  tidy() %>% 
+  mutate(term = str_remove(term, "tfidf_text_")) %>% 
+  arrange(estimate) %>% 
+  view()
+```
+
+
+### xgb model
+
+```{r}
+
+```
+
+
+
