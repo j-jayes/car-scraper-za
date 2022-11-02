@@ -1,0 +1,148 @@
+---
+title: "goecoding"
+format: html
+---
+
+
+```{r}
+library(tidyverse)
+df <- read_rds("clean_data/df.rds")
+```
+
+
+```{r}
+df %>% 
+  select(contains("location")) %>% 
+  head(1000)
+
+locations <- df %>% 
+  distinct(location_2) %>% 
+  mutate(location = str_c(location_2, ", South Africa"))
+```
+
+
+```{r}
+locations
+
+library(tidygeocoder)
+
+locations_coded <- geocode(locations, address = location)
+
+locations_coded <- locations_coded %>% 
+  mutate(location_key = location)
+```
+
+
+```{r}
+locations_to_code_2 <- df %>%
+  count(location_2) %>%
+  inner_join(
+    locations_coded %>%
+      filter(is.na(lat))
+  ) %>% 
+  arrange(desc(n)) %>% 
+  mutate(location_3 = str_remove(location_2, "\\,.*")) 
+
+locations_coded_2 <- geocode(locations_to_code_2, address = location_3)
+
+locations_coded_2 <- locations_coded_2 %>% 
+  select(location, location_2, location_3, lat = lat...8, long = long...9)
+
+locations_coded_2 <- locations_coded_2 %>% 
+  mutate(location_key = location)
+
+locations_to_code_3 <-  locations_coded_2 %>% 
+  filter(is.na(lat)) %>% 
+  mutate(location_4 = c(
+    "Johannesburg",
+    "Johannesburg",
+    "Ballito",
+    "Wynberg",
+    "Port Elizabeth",
+    "Cape Town",
+    "Polokwane",
+    "Polokwane",
+    "Kimberley",
+    "Mbombela",
+    "Mbombela",
+    "Johannesburg",
+    "Pretoria",
+    "Mbombela",
+    "Riebeek-Kasteel",
+    "Klerksdorp",
+    "Vredendal, Wester Cape"
+  )) %>% 
+  select(-lat, -long)
+
+locations_coded_3 <- locations_to_code_3 %>% 
+  geocode(address = location_4)
+
+locations_coded_3 <- locations_coded_3 %>% 
+  mutate(location_key = location)
+```
+
+
+
+Combine
+
+```{r}
+locations_coded_4 <- locations_coded %>% 
+  filter(!is.na(lat)) %>% 
+  bind_rows(locations_coded_2 %>% 
+              filter(!is.na(lat))) %>% 
+  bind_rows(locations_coded_3) %>% 
+  select(location_key, lat, long)
+```
+
+```{r}
+locations_coded_4 %>% 
+  ggplot(aes(long, lat)) +
+  geom_point()
+```
+
+These are the areas that are in SA.
+
+```{r}
+locations_coded_4 %>% 
+  filter(between(lat, -36, -20),
+         between(long, 15, 35)) %>% 
+  ggplot(aes(long, lat)) +
+  geom_point() +
+  coord_map()
+```
+
+What is not?
+
+```{r}
+locations_coded_4 %>% 
+  filter(!between(lat, -36, -20),
+         !between(long, 15, 35)) %>% 
+  ggplot(aes(long, lat)) +
+  geom_point() +
+  borders() +
+  coord_map()
+```
+
+```{r}
+# locations_coded_4 %>%
+#   filter(!between(lat, -36, -20),
+#          !between(long, 15, 35)) %>%
+#   write.csv("dev/locations_4.csv")
+```
+
+```{r}
+df <- readxl::read_excel("dev/locations_4.xlsx")
+
+locations_coded_5 <- geocode(df, address = location_fixed)
+
+locations_coded_5 <- locations_coded_5 %>% 
+  select(-location_fixed)
+
+locations_coded_final <- locations_coded_4 %>% 
+  filter(between(lat, -36, -20),
+         between(long, 15, 35)) %>% 
+  bind_rows(locations_coded_5)
+
+locations_coded_final %>% write_rds("data/clean/locations.rds")
+```
+

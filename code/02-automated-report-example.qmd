@@ -1,0 +1,237 @@
+---
+title: "Automated report example"
+format: html
+---
+
+If you have a vehicle that you're selling in South Africa, what would you want to know?
+
+For my make, model, year and kilometres, what is the expected price?
+
+Then, what kinds of things in the adverts are correlated with higher prices, and lower prices? words?
+
+```{r}
+library(tidyverse)
+library(here)
+
+# files <- list.files(path = "data/raw", pattern = ".rds") %>% str_c("data/raw/", .)
+```
+
+```{r}
+# df_list <- map(files, read_rds)
+# 
+# df <- bind_rows(df_list, .id = 'date_num')
+```
+
+
+```{r}
+# library(glue)
+# 
+# df <- df %>% 
+#   janitor::clean_names()
+# 
+# df <- df %>% 
+#   mutate(across(c(year, kilometers), parse_number))
+# 
+# # df %>% head(100) %>% view()
+# 
+# df <- df %>% 
+#   mutate(make_model = glue("{make} {model}"),
+#          price = round(price),
+#          year = round(year)) %>% 
+#   select(title,
+#          price,
+#          year,
+#          kilometers,
+#          make_model,
+#          seller_type,
+#          seller_name,
+#          province,
+#          location,
+#          location_2,
+#          colour,
+#          n_photos,
+#          body_type,
+#          fuel_type,
+#          transmission,
+#          ad_url,
+#          ad_date,
+#          n_views,
+#          text)
+# 
+# 
+# df <- df %>% 
+#   mutate(province = str_replace(province, "-", " "),
+#          province = str_replace(province, "\\+", "-"),
+#          province = str_to_title(province))
+# 
+# df <- df %>% 
+#   arrange(ad_url, desc(ad_date)) %>% 
+#   distinct(title, kilometers, text, .keep_all = T)
+```
+
+
+
+```{r}
+# df %>% write_rds("clean_data/df.rds", compress = "gz")
+```
+
+```{r}
+df <- read_rds("clean_data/df.rds")
+
+df <- df %>% 
+  drop_na()
+```
+
+
+
+
+### Report
+
+```{r}
+df <- read_rds("clean_data/df.rds")
+
+df <- df %>% 
+  drop_na()
+```
+
+
+```{r}
+df %>%
+  filter(make_model %in% c("Mercedes-Benz C-Class", "BMW 3 Series")) %>%
+  ggplot(aes(kilometers, price, colour = make_model)) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "R"), limits = c(0, NA)) +
+  scale_x_continuous(labels = scales::number_format(), limits = c(NA, 300000)) +
+  geom_point(alpha = .3) +
+  geom_smooth()
+
+
+
+```
+
+What is the distribution of kilometres.
+
+```{r}
+df %>%
+  mutate(make_model = fct_lump(make_model, 9)) %>% 
+  ggplot(aes(kilometers, fill = make_model)) +
+  scale_x_continuous(labels = scales::number_format(), limits = c(NA, 300000)) +
+  geom_density(alpha = .5) +
+  facet_wrap(~ make_model)
+```
+
+
+
+
+What kind of things would you want in a table??
+
+```{r}
+df %>% 
+  filter(make_model == "Toyota Hilux")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+df_clio <- df %>% 
+  filter(make_model == "Renault Clio")
+```
+
+
+```{r}
+
+df_clio %>% 
+  ggplot(aes(kilometers, price)) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "R"), limits = c(0, NA)) +
+  scale_x_continuous(labels = scales::number_format(), limits = c(NA, 300000)) +
+  geom_point(alpha = .3) +
+  geom_smooth()
+```
+
+```{r}
+df_clio %>% 
+  select(contains("date"))
+```
+
+
+```{r}
+df_clio %>% 
+  mutate(ad_date = lubridate::ymd_hms(ad_date)) %>% 
+  filter(ad_date > 2020) %>% 
+  mutate(month = lubridate::month(ad_date)) %>% 
+  ggplot(aes(ad_date, price, fill = month, group = month)) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "R"), limits = c(0, NA)) +
+  geom_boxplot(alpha = .3) +
+  geom_smooth(group = 1)
+```
+
+
+```{r}
+df_clio %>%
+  ggplot(aes(year)) +
+  geom_density()
+
+df_clio %>% 
+  count(title, sort = T)
+
+df_clio %>% 
+  filter(title == "2022 Renault Clio V 1.0T Life") %>% 
+  view()
+
+df_clio %>% 
+  arrange(desc(ad_date), ad_url) %>% view()
+  distinct(title, .keep_all = T) %>% 
+  ggplot(aes(year)) +
+  geom_density()
+```
+
+
+```{r}
+df %>% 
+  count(make_model, year, sort = T)
+```
+
+
+```{r}
+
+```
+
+
+
+```{r}
+df %>% 
+  count(make_model, sort = T)
+
+df %>% filter(make_model == "Mercedes-Benz C-Class") %>% 
+  ggplot(aes(kilometers, price)) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "R"), limits = c(0, NA)) +
+  scale_x_continuous(labels = scales::number_format(), limits = c(NA, 300000)) +
+  geom_point(alpha = .3) +
+  geom_smooth()
+```
+
+
+```{r}
+library(tidytext)
+
+df %>% filter(make_model == "Mercedes-Benz C-Class") %>% 
+  select(price, text) %>% 
+  unnest_tokens(text, output = word)
+```
+
+
+
+

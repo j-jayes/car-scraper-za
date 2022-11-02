@@ -13,10 +13,13 @@ library(tidymodels)
 library(tidyverse)
 
 # setwd(here::here("car_price_prediction"))
+# setwd(here::here())
 
 model <- read_rds("final_lasso_model.rds")
 
 # df_test <- read_rds("data/test_df.rds")
+
+make_model_ops <- read_rds("make_model_opts.rds")
 
 # test_ob <- df_test %>% 
 #   slice_sample(n = 1)
@@ -24,11 +27,6 @@ model <- read_rds("final_lasso_model.rds")
 # predict(model, test_ob %>% select(-price))
 
 # test_ob
-
-# make_model_ops <- df_small %>%
-#   count(make_model, sort = T) %>% 
-#   head(50) %>% 
-#   pull(make_model)
 
 # setwd(here::here("car_price_prediction"))
 

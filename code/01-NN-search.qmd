@@ -1,0 +1,145 @@
+---
+title: "Untitled"
+format: html
+---
+
+```{r}
+library(tidyverse)
+
+```
+
+
+```{r}
+files <- list.files(path = "data/raw", pattern = ".rds") %>% str_c("data/raw/", .)
+
+files <- files[3]
+```
+
+```{r}
+df_list <- map(files, read_rds)
+
+df <- bind_rows(df_list, .id = 'date_num')
+
+# df %>%
+#   slice_sample(n = 3000) %>%
+#   write_rds("data/test_df.rds")
+```
+
+
+```{r}
+library(glue)
+
+df <- df %>% 
+  janitor::clean_names()
+
+df <- df %>% 
+  mutate(across(c(year, kilometers), parse_number))
+
+# df %>% head(100) %>% view()
+
+df <- df %>% 
+  mutate(make_model = glue("{make} {model}"),
+         price = round(price),
+         year = round(year)) %>% 
+  select(title,
+         price,
+         make_model,
+         seller_type,
+         province,
+         kilometers,
+         colour,
+         year,
+         n_photos,
+         body_type,
+         fuel_type,
+         transmission,
+         ad_url,
+         text)
+```
+
+## Purpose
+
+Nearest neighbour matching
+
+```{r}
+library(tidymodels)
+
+df_np <- df %>% 
+  select(-price) %>% 
+  mutate(rn = row_number())
+
+pca_rec <- recipe( ~ ., df_np) %>% 
+  update_role(c(title, text, ad_url, rn), new_role = "id") %>% 
+  step_impute_median(all_numeric_predictors()) %>% 
+  step_impute_knn(all_nominal_predictors()) %>% 
+  step_other(all_nominal_predictors(), threshold = .01) %>% 
+  step_novel(all_nominal_predictors()) %>% 
+  step_dummy(all_nominal_predictors()) %>% 
+  step_nzv(all_predictors()) %>% 
+  step_normalize(all_numeric_predictors())
+
+pca_rec %>% prep() %>% juice()
+```
+
+```{r}
+juiced_pca <- pca_rec %>% 
+  step_pca(all_predictors(), num_comp = 3) %>% 
+  prep() %>% juice()
+
+juiced_pca %>%
+  inner_join(df %>% mutate(rn = row_number())) %>%
+  ggplot(aes(PC1, PC2, colour = log(price))) +
+  geom_point() +
+  scale_color_viridis_c()
+```
+
+
+```{r}
+library(embed)
+
+juiced_umap <- pca_rec %>% 
+  step_umap(all_predictors(), num_comp = 2) %>% 
+  prep() %>% juice()
+
+juiced_umap %>%
+  inner_join(df %>% mutate(rn = row_number())) %>%
+  ggplot(aes(UMAP1, UMAP2, colour = log(price))) +
+  geom_point() +
+  scale_color_viridis_c()
+```
+
+Find nearest neighbours
+
+```{r}
+tbl <- df_np %>% slice(1)
+
+
+get_nn <- function(tbl){
+  df_baked <- pca_rec %>%
+    step_pca(all_predictors(), num_comp = 3) %>% 
+    prep %>% juice()
+  
+  
+  pcs <- pca_rec %>%
+    step_pca(all_predictors(), num_comp = 3) %>% 
+    prep %>% bake(tbl)
+  
+  v_1 <- pcs %>% pull(PC1)
+  v_2 <- pcs %>% pull(PC2)
+  v_3 <- pcs %>% pull(PC3)
+
+  
+  df_baked %>% 
+    mutate(d1 = (PC1 - v_1)^2,
+           d2 = (PC2 - v_2)^2,
+           d3 = (PC3 - v_3)^2,
+           ssd = sqrt(d1 + d2 + d3)) %>% 
+    arrange(ssd) %>% view()
+  
+}
+
+
+```
+
+
+

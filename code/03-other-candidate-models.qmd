@@ -1,0 +1,18 @@
+---
+title: "Untitled"
+format: html
+---
+
+## Purpose
+
+Another model
+
+```{r}
+df <- read_rds("clean_data/df.rds")
+```
+
+
+```{r}
+usemodels::use_ranger()
+```
+

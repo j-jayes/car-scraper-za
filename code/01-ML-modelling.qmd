@@ -114,7 +114,6 @@ library(tidymodels)
 
 df_small <- df %>% 
   drop_na() %>% 
-  slice_sample(n = 500000) %>%
   select(-c(text, ad_url)) %>% 
   mutate(price = log(price))
 
@@ -303,5 +302,122 @@ text_fit %>%
 
 ```
 
+
+### Nearest neighbour classification
+
+What I want to do is return the most similar car record to the particular 
+
+We can do this with clustering perhaps.
+
+```{r}
+library(embed)
+
+df_small <- df %>%
+  drop_na() %>% 
+  slice_sample(n = 1000000) %>% 
+  mutate(id = row_number())
+
+umap_rec <- recipe(~., data = df_small) %>%
+  update_role(c(id, title, text, ad_url), new_role = "id") %>%
+  step_other(all_nominal_predictors(), threshold = .01) %>%
+  step_zv(all_predictors()) %>%
+  step_novel(all_nominal_predictors()) %>%
+  step_dummy(all_nominal_predictors(), one_hot = T) %>%
+  step_normalize(all_numeric_predictors()) %>%
+  step_umap(all_predictors(), num_comp = 2)
+
+umap_juiced <- prep(umap_rec) %>% juice()
+
+umap_juiced
+```
+
+
+```{r}
+umap_juiced %>%
+  ggplot(aes(UMAP1, UMAP2, label = title)) +
+  geom_point(alpha = 0.7, size = 2) +
+  geom_text(check_overlap = TRUE, hjust = "inward", family = "IBMPlexSans") +
+  labs(color = NULL)
+```
+
+
+```{r}
+umap_juiced
+
+points <- umap_juiced %>% 
+  slice(1) %>% 
+  select(UMAP1, UMAP2) %>% 
+  rename(p1 = UMAP1, p2 = UMAP2)
+
+dist( method = "euclidean")
+
+find_similar <- function(datapoint){
+  umap_juiced %>% 
+    bind_cols(points) %>% 
+    mutate(dist = sqrt(sum(UMAP1 - p1)^2+sum(UMAP2 - p2)^2))
+  
+}
+```
+
+
+```{r}
+x1 <- rnorm(30)
+x2 <- rnorm(30)
+dist(rbind(x1, x2))
+
+dist(rbind(x1, x2))
+
+euc.dist <- function(x1, x2) sqrt(sum((x1 - x2) ^ 2))
+
+```
+
+### rf model
+
+```{r}
+# usemodels::use_ranger(price ~ ., data = df)
+
+ranger_recipe <- 
+  recipe(formula = price ~ ., data = df_small) %>% 
+  update_role(c(id, title, text, ad_url), new_role = "id") %>%
+  step_other(all_nominal_predictors(), threshold = .01) %>%
+  step_zv(all_predictors()) %>%
+  step_novel(all_nominal_predictors()) %>%
+  step_normalize(all_numeric_predictors())
+
+ranger_spec <- 
+  rand_forest(mtry = tune(), min_n = tune(), trees = 1000) %>% 
+  set_mode("regression") %>% 
+  set_engine("ranger") 
+
+rf_param <-
+  ranger_spec %>%
+  extract_parameter_set_dials() %>%
+  finalize(ranger_recipe %>% prep() %>% juice())
+
+ranger_grid <- grid_regular(rf_param, levels = 5)
+
+ranger_workflow <- 
+  workflow() %>% 
+  add_recipe(ranger_recipe) %>% 
+  add_model(ranger_spec) 
+
+df_folds <- vfold_cv(df_small, v = 5)
+
+set.seed(35807)
+ranger_tune <- tune_grid(ranger_workflow, resamples = df_folds, grid = ranger_grid)
+```
+
+
+```{r}
+ranger_tune %>% 
+  autoplot()
+
+ranger_workflow_final <- ranger_workflow %>% 
+  finalize_workflow(select_best(ranger_tune, "rsq"))
+```
+
+```{r}
+
+```
 
 

@@ -1,0 +1,81 @@
+---
+title: "Augmentation-Pipeline"
+format: html
+---
+
+## Purpose
+
+Prepare dataset for modelling
+
+```{r}
+library(tidyverse)
+library(glue)
+library(janitor)
+library(glue)
+
+files <- list.files(path = "data/raw", pattern = ".rds") %>% str_c("data/raw/", .)
+
+df_list <- map(files, read_rds)
+df <- bind_rows(df_list, .id = 'date_num')
+
+df <- df %>% 
+  clean_names()
+
+df <- df %>% 
+  mutate(across(c(year, kilometers), parse_number))
+
+df <- df %>%
+  mutate(make_model = glue("{make} {model}"),
+         price = round(price),
+         year = round(year)) %>%
+  select(title,
+         price,
+         year,
+         kilometers,
+         make_model,
+         seller_type,
+         seller_name,
+         province,
+         location,
+         location_2,
+         colour,
+         n_photos,
+         body_type,
+         fuel_type,
+         transmission,
+         ad_url,
+         ad_date,
+         n_views,
+         text)
+
+df <- df %>% 
+  mutate(province = str_replace(province, "-", " "),
+         province = str_replace(province, "\\+", "-"),
+         province = str_to_title(province))
+
+df <- df %>%
+  arrange(ad_url, desc(ad_date)) %>%
+  distinct(title, kilometers, text, .keep_all = T)
+```
+
+Join to location data
+
+```{r}
+locations <- read_rds("data/clean/locations.rds") %>% 
+  rename(location = location_key) %>% 
+  mutate(location = str_squish(str_remove(location, ", South Africa")))
+
+locations %>% 
+  filter(str_detect(location, "Northcliff"))
+
+df <- df %>% 
+  head(20000) %>% 
+  left_join(locations, by = c("location")) %>% 
+  select(lat)
+
+df %>% 
+  select(lat) %>% view()
+
+```
+
+
