@@ -1,0 +1,107 @@
+---
+title: "Untitled"
+format: html
+execute: 
+  echo: false
+---
+
+
+```{ojs}
+//| panel: sidebar
+viewof price = Inputs.range(
+  [0, 1000000000],
+  {value: 200000, step: 10000, label: "Price (min):"}
+)
+
+viewof make_model = Inputs.checkbox(
+  ["Volkswagen Polo", "Toyota Hilux", "Ford Ranger"], 
+  { value: ["Toyota Hilux", "Volkswagen Polo"], 
+    label: "Make & model:"
+  }
+)
+
+
+```
+
+viewof make_model = Inputs.select(["Volkswagen Polo", "Toyota Hilux", "Ford Ranger"], {label: "Make & model:"})
+
+::: {#penguins-tabset .panel-tabset .ojs-track-layout}
+## Plot
+
+```{ojs}
+Plot.plot({
+  x: {
+    domain: [0, 300000]
+  },
+  marks: [
+    Plot.dot(filtered, { x: "kilometers", y: "price" }),
+    Plot.linearRegressionY(filtered, {x: "kilometers", y: "price", stroke: "steelblue", ci: 0.95})
+  ]
+})
+
+chart = Histogram(filtered, {
+  value: d => d.price,
+  label: "Price",
+  width,
+  height: 500,
+  color: "steelblue"
+})
+
+
+Plot.plot({
+  y: {
+    grid: true,
+    inset: 6
+  },
+  marks: [
+    Plot.boxY(filtered, {x: "make_model", y: "price", fill: "make_model",
+    title: (d) =>
+        `${d.make_model} \n Price: ${d.price}`})
+  ]
+})
+```
+
+bp = BoxPlot(filtered, {
+  x: d => d.year,
+  y: d => d.price,
+  color: d => d.make_model,
+  xLabel: "Year →",
+  yLabel: "↑ price",
+  height: 500
+})
+
+## Data
+
+```{ojs}
+Inputs.table(filtered)
+```
+:::
+
+Read and filter the data based on the user's inputs:
+
+```{r}
+df <- readr::read_rds(here::here("clean_data/df_sample.rds"))
+
+ojs_define(data = df)
+```
+
+
+```{ojs}
+data_t = transpose(data)
+
+filtered = data_t.filter(function(ad) {
+  return price < ad.price &&
+         make_model.includes(ad.make_model);
+})
+```
+
+
+```{ojs}
+d3 = require("d3@7")
+import {Histogram} from "@d3/histogram"
+import {BoxPlot} from "@d3/box-plot"
+import {Plot} from "@mkfreeman/plot-tooltip"
+
+```
+
+<!-- import {chart, style, innerWidth, innerHeight} from "@harrystevens/quadratic-regression" -->
