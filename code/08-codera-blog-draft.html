@@ -83,12 +83,14 @@ ul.task-list li input[type="checkbox"] {
 <iframe src="https://jonathan-jayes.shinyapps.io/Car-price-prediction/" width="672" height="1200" data-external="1">
 </iframe>
 </div>
-<p>I want to improve it in two ways. First I want to add an ensemble model that includes a few non-linear regression models. At the moment it just uses a penalized linear regression model with no interaction terms. Second, I want to add a NLP model to help people use the right keywords for higher prices in their own adverts. This can be done with a simple</p>
+<p>I want to improve it in two ways.</p>
+<p>First I want to add an ensemble model that includes a tree-based regression model. At the moment it just uses a penalized linear regression model with no interaction terms.</p>
+<p>Second, I want to add a NLP model to help people use the right keywords for higher prices in their own adverts. This can be done with a simple linear SVM using words in the advert description as price predictors.</p>
 <p>In the meantime we can make a short post on the drop off in advertised prices on Gumtree.</p>
 </section>
 <section id="price-drop-off" class="level3 page-columns page-full">
 <h3 class="anchored" data-anchor-id="price-drop-off">Price drop off</h3>
-<p>Say you want to buy a five-year-old second hand car with 30,000km on the odometer, drive it for three years (averaging 15,000 km per year) and then sell it again.</p>
+<p>Say you want to buy a five-year-old second-hand car with 30,000km on the odometer, drive it for three years (averaging 15,000 km per year) and then sell it again.</p>
 <p>Which is a good car to choose, to minimise your capital depreciation?</p>
 <p>In the figure below I show the difference in asking prices for the situation described above for the 15 most popular models.</p>
 <div class="cell">
@@ -104,12 +106,12 @@ ul.task-list li input[type="checkbox"] {
 <div class="cell page-columns page-full">
 <div class="cell-output-display column-page">
 
-<div id="rrinqkjpuo" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="gauybfinvl" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-:where(#rrinqkjpuo) .gt_table {
+:where(#gauybfinvl) .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -134,7 +136,7 @@ ul.task-list li input[type="checkbox"] {
   border-left-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_heading {
+:where(#gauybfinvl) .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -146,7 +148,7 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_title {
+:where(#gauybfinvl) .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -158,7 +160,7 @@ ul.task-list li input[type="checkbox"] {
   border-bottom-width: 0;
 }
 
-:where(#rrinqkjpuo) .gt_subtitle {
+:where(#gauybfinvl) .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -170,13 +172,13 @@ ul.task-list li input[type="checkbox"] {
   border-top-width: 0;
 }
 
-:where(#rrinqkjpuo) .gt_bottom_border {
+:where(#gauybfinvl) .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_col_headings {
+:where(#gauybfinvl) .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -191,7 +193,7 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_col_heading {
+:where(#gauybfinvl) .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -211,7 +213,7 @@ ul.task-list li input[type="checkbox"] {
   overflow-x: hidden;
 }
 
-:where(#rrinqkjpuo) .gt_column_spanner_outer {
+:where(#gauybfinvl) .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -223,15 +225,15 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 4px;
 }
 
-:where(#rrinqkjpuo) .gt_column_spanner_outer:first-child {
+:where(#gauybfinvl) .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-:where(#rrinqkjpuo) .gt_column_spanner_outer:last-child {
+:where(#gauybfinvl) .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-:where(#rrinqkjpuo) .gt_column_spanner {
+:where(#gauybfinvl) .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -243,7 +245,7 @@ ul.task-list li input[type="checkbox"] {
   width: 100%;
 }
 
-:where(#rrinqkjpuo) .gt_group_heading {
+:where(#gauybfinvl) .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -268,7 +270,7 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: middle;
 }
 
-:where(#rrinqkjpuo) .gt_empty_group_heading {
+:where(#gauybfinvl) .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -283,15 +285,15 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: middle;
 }
 
-:where(#rrinqkjpuo) .gt_from_md > :first-child {
+:where(#gauybfinvl) .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-:where(#rrinqkjpuo) .gt_from_md > :last-child {
+:where(#gauybfinvl) .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-:where(#rrinqkjpuo) .gt_row {
+:where(#gauybfinvl) .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -310,7 +312,7 @@ ul.task-list li input[type="checkbox"] {
   overflow-x: hidden;
 }
 
-:where(#rrinqkjpuo) .gt_stub {
+:where(#gauybfinvl) .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -323,7 +325,7 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-:where(#rrinqkjpuo) .gt_stub_row_group {
+:where(#gauybfinvl) .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -337,11 +339,11 @@ ul.task-list li input[type="checkbox"] {
   vertical-align: top;
 }
 
-:where(#rrinqkjpuo) .gt_row_group_first td {
+:where(#gauybfinvl) .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-:where(#rrinqkjpuo) .gt_summary_row {
+:where(#gauybfinvl) .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -351,16 +353,16 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-:where(#rrinqkjpuo) .gt_first_summary_row {
+:where(#gauybfinvl) .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_first_summary_row.thick {
+:where(#gauybfinvl) .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-:where(#rrinqkjpuo) .gt_last_summary_row {
+:where(#gauybfinvl) .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -370,7 +372,7 @@ ul.task-list li input[type="checkbox"] {
   border-bottom-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_grand_summary_row {
+:where(#gauybfinvl) .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -380,7 +382,7 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-:where(#rrinqkjpuo) .gt_first_grand_summary_row {
+:where(#gauybfinvl) .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -390,11 +392,11 @@ ul.task-list li input[type="checkbox"] {
   border-top-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_striped {
+:where(#gauybfinvl) .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-:where(#rrinqkjpuo) .gt_table_body {
+:where(#gauybfinvl) .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -403,7 +405,7 @@ ul.task-list li input[type="checkbox"] {
   border-bottom-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_footnotes {
+:where(#gauybfinvl) .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -417,7 +419,7 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_footnote {
+:where(#gauybfinvl) .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -426,7 +428,7 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-:where(#rrinqkjpuo) .gt_sourcenotes {
+:where(#gauybfinvl) .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -440,7 +442,7 @@ ul.task-list li input[type="checkbox"] {
   border-right-color: #D3D3D3;
 }
 
-:where(#rrinqkjpuo) .gt_sourcenote {
+:where(#gauybfinvl) .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -448,64 +450,64 @@ ul.task-list li input[type="checkbox"] {
   padding-right: 5px;
 }
 
-:where(#rrinqkjpuo) .gt_left {
+:where(#gauybfinvl) .gt_left {
   text-align: left;
 }
 
-:where(#rrinqkjpuo) .gt_center {
+:where(#gauybfinvl) .gt_center {
   text-align: center;
 }
 
-:where(#rrinqkjpuo) .gt_right {
+:where(#gauybfinvl) .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-:where(#rrinqkjpuo) .gt_font_normal {
+:where(#gauybfinvl) .gt_font_normal {
   font-weight: normal;
 }
 
-:where(#rrinqkjpuo) .gt_font_bold {
+:where(#gauybfinvl) .gt_font_bold {
   font-weight: bold;
 }
 
-:where(#rrinqkjpuo) .gt_font_italic {
+:where(#gauybfinvl) .gt_font_italic {
   font-style: italic;
 }
 
-:where(#rrinqkjpuo) .gt_super {
+:where(#gauybfinvl) .gt_super {
   font-size: 65%;
 }
 
-:where(#rrinqkjpuo) .gt_footnote_marks {
+:where(#gauybfinvl) .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-:where(#rrinqkjpuo) .gt_asterisk {
+:where(#gauybfinvl) .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-:where(#rrinqkjpuo) .gt_indent_1 {
+:where(#gauybfinvl) .gt_indent_1 {
   text-indent: 5px;
 }
 
-:where(#rrinqkjpuo) .gt_indent_2 {
+:where(#gauybfinvl) .gt_indent_2 {
   text-indent: 10px;
 }
 
-:where(#rrinqkjpuo) .gt_indent_3 {
+:where(#gauybfinvl) .gt_indent_3 {
   text-indent: 15px;
 }
 
-:where(#rrinqkjpuo) .gt_indent_4 {
+:where(#gauybfinvl) .gt_indent_4 {
   text-indent: 20px;
 }
 
-:where(#rrinqkjpuo) .gt_indent_5 {
+:where(#gauybfinvl) .gt_indent_5 {
   text-indent: 25px;
 }
 </style>

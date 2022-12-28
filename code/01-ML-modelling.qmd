@@ -163,6 +163,11 @@ final_lasso_model <- fit(log_wf, df_small)
 final_lasso_model %>% write_rds("models/final_lasso_model.rds", compress = "gz")
 ```
 
+### SVM model
+
+```{r}
+
+```
 
 
 
@@ -405,8 +410,9 @@ earth_tune <-
   tune_grid(earth_workflow, resamples = df_folds_small, grid = earth_grid) 
 
 earth_tune %>% 
-  show_best()
-  collect_metrics()
+  show_best("rsq")
+
+finalize_workflow <- earth_workflow
 ```
 
 

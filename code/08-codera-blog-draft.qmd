@@ -33,13 +33,17 @@ knitr::include_url("https://jonathan-jayes.shinyapps.io/Car-price-prediction/", 
 ```
 
 
-I want to improve it in two ways. First I want to add an ensemble model that includes a few non-linear regression models. At the moment it just uses a penalized linear regression model with no interaction terms. Second, I want to add a NLP model to help people use the right keywords for higher prices in their own adverts. This can be done with a simple 
+I want to improve it in two ways. 
+
+First I want to add an ensemble model that includes a tree-based regression model. At the moment it just uses a penalized linear regression model with no interaction terms. 
+
+Second, I want to add a NLP model to help people use the right keywords for higher prices in their own adverts. This can be done with a simple linear SVM using words in the advert description as price predictors.
 
 In the meantime we can make a short post on the drop off in advertised prices on Gumtree.
 
 ### Price drop off
 
-Say you want to buy a five-year-old second hand car with 30,000km on the odometer, drive it for three years (averaging 15,000 km per year) and then sell it again.
+Say you want to buy a five-year-old second-hand car with 30,000km on the odometer, drive it for three years (averaging 15,000 km per year) and then sell it again.
 
 Which is a good car to choose, to minimise your capital depreciation?
 
