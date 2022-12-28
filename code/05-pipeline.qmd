@@ -56,6 +56,7 @@ df <- df %>%
 df <- df %>%
   arrange(ad_url, desc(ad_date)) %>%
   distinct(title, kilometers, text, .keep_all = T)
+
 ```
 
 Join to location data
@@ -65,17 +66,46 @@ locations <- read_rds("data/clean/locations.rds") %>%
   rename(location = location_key) %>% 
   mutate(location = str_squish(str_remove(location, ", South Africa")))
 
-locations %>% 
-  filter(str_detect(location, "Northcliff"))
-
 df <- df %>% 
-  head(20000) %>% 
-  left_join(locations, by = c("location")) %>% 
-  select(lat)
-
-df %>% 
-  select(lat) %>% view()
+  left_join(locations, by = c("location_2" = "location")) %>% 
+  select(-location) %>% 
+  rename(location = location_2)
 
 ```
+
+What about some data sanity checks??
+
+For instance, year should be truncated to like 1990, no?
+
+Maybe I should make a document that records these choices? Or put it here?
+
+### Data sanitisation
+
+```{r}
+# df %>%
+#   ggplot(aes(year)) +
+#   geom_density() +
+#   geom_vline(xintercept = 1990, lty = 2)
+# 
+# df %>%
+#   ggplot(aes(price)) +
+#   geom_density() +
+#   scale_x_continuous(limits = c(NA, 2000000))
+# 
+# df %>% 
+#   ggplot(aes(kilometers)) +
+#   geom_density() +
+#   scale_x_continuous(limits = c(NA, 500000))
+
+df <- df %>% 
+  filter(year >= 1990,
+         price <= 2000000,
+         kilometers < 500000)
+
+st <- format(Sys.time(), "%Y-%m-%d-%I-%M-%p")
+
+write_rds(df, paste0("clean_data/df_complete_", st, ".rds"), compress = "gz")
+```
+
 
 

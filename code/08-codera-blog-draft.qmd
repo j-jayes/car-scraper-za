@@ -1,0 +1,179 @@
+---
+title: "Blog post draft"
+format: html
+execute: 
+  echo: false
+  message: false
+  warning: false
+---
+
+## Purpose
+
+Draft of blog for Codera on car prices.
+
+```{r}
+#| fig-cap: A red car driving in front of a gumtree in the style of Paul Cezanne, beautiful art
+
+knitr::include_graphics("https://github.com/j-jayes/img-repo/raw/53f5638c047c292baebee18e4b82fb6bfaf0d77d/images/red_car.png")
+```
+
+
+### Structure
+
+The plan is to showcase the gumtree data and some automation.
+
+I can potentially build a site that has a breakdown of information you might want to know when selling or buying a car on Gumtree. This would help people set prices and find out the premium that they might get by selling the car through a registered dealer.
+
+So far, I have a simple model that predicts price wrapped in a Shiny app:
+
+You can change the inputs in the dropdowns and sliders and see a predicted price that the car could be advertised for on Gumtree.
+
+```{r}
+knitr::include_url("https://jonathan-jayes.shinyapps.io/Car-price-prediction/", height = 1200)
+```
+
+
+I want to improve it in two ways. First I want to add an ensemble model that includes a few non-linear regression models. At the moment it just uses a penalized linear regression model with no interaction terms. Second, I want to add a NLP model to help people use the right keywords for higher prices in their own adverts. This can be done with a simple 
+
+In the meantime we can make a short post on the drop off in advertised prices on Gumtree.
+
+### Price drop off
+
+Say you want to buy a five-year-old second hand car with 30,000km on the odometer, drive it for three years (averaging 15,000 km per year) and then sell it again.
+
+Which is a good car to choose, to minimise your capital depreciation?
+
+In the figure below I show the difference in asking prices for the situation described above for the 15 most popular models.
+
+```{r}
+library(tidyverse)
+theme_set(theme_light())
+
+df <- read_rds(here::here("clean_data/df_complete_2022-12-27-02-53-pm.rds"))
+
+makes_models <- df %>%
+  count(make_model, sort = T) %>%
+  filter(!str_detect(make_model, "Other")) %>% 
+  slice_head(n = 15) %>% 
+  select(make_model)
+
+df_buy <- df %>%
+  filter(make_model %in% makes_models$make_model) %>%
+  group_by(make_model) %>%
+  filter(
+    between(kilometers, 20000, 40000),
+    between(year, 2017, 2020)
+  ) %>%
+  summarise(mean_price_buy = mean(price),
+            n_buy = n())
+
+
+df_sell <- df %>%
+  filter(make_model %in% makes_models$make_model) %>%
+  group_by(make_model) %>%
+  filter(
+    between(kilometers, 65000, 85000),
+    between(year, 2012, 2015)
+  ) %>%
+  summarise(mean_price_sell = mean(price),
+            n_sell = n())
+```
+
+
+```{r}
+df_cars <- df_buy %>% 
+  inner_join(df_sell)
+
+df_cars <- df_cars %>% 
+  select(make_model, contains("price")) %>% 
+  pivot_longer(-make_model) %>% 
+  mutate(price = scales::dollar(round(value, digits = -3), prefix = "ZAR ")) 
+
+
+labels_left <- df_cars %>% 
+  filter(name == "mean_price_buy") %>% 
+  select(make_model, price_buy = price, mean_value_buy = value)
+
+labels_right <- df_cars %>% 
+  filter(name == "mean_price_sell") %>% 
+  select(make_model, price_sell = price, mean_value_sell = value)
+
+df_cars <- df_cars %>% 
+  inner_join(labels_left) %>% 
+  inner_join(labels_right)
+
+df_cars %>%
+  ggplot(aes(name, value, colour = make_model, group = make_model)) +
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "ZAR")) +
+  scale_color_viridis_d() +
+  theme(legend.position = "none") +
+  geom_text(aes(
+    x = "mean_price_buy",
+    y = mean_value_buy,
+    label = paste0(make_model, "\n(", price_buy, ")")
+  ),
+  check_overlap = T,
+  colour = "black",
+  hjust = 1.1,
+  cex = 3
+  ) +
+  geom_text(aes(
+    x = "mean_price_sell",
+    y = mean_value_sell,
+    label = paste0(make_model, "\n(", price_sell, ")")
+  ),
+  check_overlap = T,
+  colour = "black",
+  hjust = 0,
+  cex = 3
+  )
+```
+
+Here, the flatter the line, the smaller the difference between the price you would buy the car for and then sell it on for.
+
+We can put this information into a table:
+
+```{r}
+#| column: page
+
+library(gt)
+
+df_cars %>%
+  select(make_model, name, value) %>%
+  pivot_wider(names_from = name, values_from = value) %>%
+  mutate(
+    price_diff = mean_price_buy - mean_price_sell,
+    price_diff_pct = 1 - price_diff / mean_price_buy,
+    across(c(mean_price_buy, mean_price_sell), ~ round(.x, -3))
+  ) %>%
+  arrange(desc(price_diff_pct)) %>%
+  select(make_model, mean_price_buy, mean_price_sell, price_diff_pct) %>%
+  gt() %>%
+  fmt_currency(columns = c(mean_price_buy, mean_price_sell), currency = "ZAR", decimals = 0) %>%
+  fmt_percent(columns = price_diff_pct) %>%
+  cols_align(align = "left", columns = make_model) %>%
+  cols_label(
+    make_model = "Make & model",
+    mean_price_buy = "Purchase price",
+    mean_price_sell = "Sale price",
+    price_diff_pct = "Retained value"
+  ) %>%
+  data_color(
+    columns = price_diff_pct,
+    colors = scales::col_numeric(
+      # custom defined values - notice that order matters!
+      palette = c("#ffffff", "#f2fbd2", "#c9ecb4", "#93d3ab", "#35b0ab"),
+      domain = NULL
+    )
+  ) %>% 
+  tab_header(title = md("**Which cars hold their value on gumtree?**"),
+             subtitle = md("15 most popular makes and models on gumtree\n*Car purchased at 5 years old, with 30k km, driven for three years*")) %>% 
+  tab_footnote("Note: Retained value shows sale price as a percentage of purchase price")
+```
+
+
+There is a surprising amount of dispersion in how much value is held among the 15 most popular makes and models. It ranges from north of 70 percent for the Kia Picanto, to below 50 percent for the BMW 3 series.
+
+In addition, we can see that relatively cheap cars, like the Nissan NP200	and Kia Picanto hold their value well. Further, the makes and models which are highly desired like the WV Golf and Polo Vivo also hold their value well. The WV Golf stands out as relatively expensive (nearly 3X the asked purchase price of the Kia Picanto) but still holds 62 percent of its value 45,000 km and three years later.

@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Car dashboard in Obseravble"
 format: html
 execute: 
   echo: false
@@ -23,7 +23,7 @@ viewof make_model = Inputs.checkbox(
 
 ```
 
-viewof make_model = Inputs.select(["Volkswagen Polo", "Toyota Hilux", "Ford Ranger"], {label: "Make & model:"})
+<!-- viewof make_model = Inputs.select(["Volkswagen Polo", "Toyota Hilux", "Ford Ranger"], {label: "Make & model:"}) -->
 
 ::: {#penguins-tabset .panel-tabset .ojs-track-layout}
 ## Plot

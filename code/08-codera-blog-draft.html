@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.2.237">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Blog post draft</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="08-codera-blog-draft_files/libs/clipboard/clipboard.min.js"></script>
+<script src="08-codera-blog-draft_files/libs/quarto-html/quarto.js"></script>
+<script src="08-codera-blog-draft_files/libs/quarto-html/popper.min.js"></script>
+<script src="08-codera-blog-draft_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="08-codera-blog-draft_files/libs/quarto-html/anchor.min.js"></script>
+<link href="08-codera-blog-draft_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="08-codera-blog-draft_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="08-codera-blog-draft_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="08-codera-blog-draft_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="08-codera-blog-draft_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Blog post draft</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="purpose" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="purpose">Purpose</h2>
+<p>Draft of blog for Codera on car prices.</p>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="https://github.com/j-jayes/img-repo/raw/53f5638c047c292baebee18e4b82fb6bfaf0d77d/images/red_car.png" class="img-fluid figure-img"></p>
+<p></p><figcaption class="figure-caption">A red car driving in front of a gumtree in the style of Paul Cezanne, beautiful art</figcaption><p></p>
+</figure>
+</div>
+</div>
+</div>
+<section id="structure" class="level3">
+<h3 class="anchored" data-anchor-id="structure">Structure</h3>
+<p>The plan is to showcase the gumtree data and some automation.</p>
+<p>I can potentially build a site that has a breakdown of information you might want to know when selling or buying a car on Gumtree. This would help people set prices and find out the premium that they might get by selling the car through a registered dealer.</p>
+<p>So far, I have a simple model that predicts price wrapped in a Shiny app:</p>
+<p>You can change the inputs in the dropdowns and sliders and see a predicted price that the car could be advertised for on Gumtree.</p>
+<div class="cell">
+<iframe src="https://jonathan-jayes.shinyapps.io/Car-price-prediction/" width="672" height="1200" data-external="1">
+</iframe>
+</div>
+<p>I want to improve it in two ways. First I want to add an ensemble model that includes a few non-linear regression models. At the moment it just uses a penalized linear regression model with no interaction terms. Second, I want to add a NLP model to help people use the right keywords for higher prices in their own adverts. This can be done with a simple</p>
+<p>In the meantime we can make a short post on the drop off in advertised prices on Gumtree.</p>
+</section>
+<section id="price-drop-off" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="price-drop-off">Price drop off</h3>
+<p>Say you want to buy a five-year-old second hand car with 30,000km on the odometer, drive it for three years (averaging 15,000 km per year) and then sell it again.</p>
+<p>Which is a good car to choose, to minimise your capital depreciation?</p>
+<p>In the figure below I show the difference in asking prices for the situation described above for the 15 most popular models.</p>
+<div class="cell">
+
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="08-codera-blog-draft_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+<p>Here, the flatter the line, the smaller the difference between the price you would buy the car for and then sell it on for.</p>
+<p>We can put this information into a table:</p>
+<div class="cell page-columns page-full">
+<div class="cell-output-display column-page">
+
+<div id="rrinqkjpuo" style="overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>html {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
+}
+
+:where(#rrinqkjpuo) .gt_table {
+  display: table;
+  border-collapse: collapse;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+:where(#rrinqkjpuo) .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 0;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+:where(#rrinqkjpuo) .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+:where(#rrinqkjpuo) .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+:where(#rrinqkjpuo) .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+:where(#rrinqkjpuo) .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+:where(#rrinqkjpuo) .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+:where(#rrinqkjpuo) .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+:where(#rrinqkjpuo) .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+:where(#rrinqkjpuo) .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+:where(#rrinqkjpuo) .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+:where(#rrinqkjpuo) .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+:where(#rrinqkjpuo) .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#rrinqkjpuo) .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+:where(#rrinqkjpuo) .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+:where(#rrinqkjpuo) .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#rrinqkjpuo) .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+:where(#rrinqkjpuo) .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#rrinqkjpuo) .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+:where(#rrinqkjpuo) .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-left: 4px;
+  padding-right: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#rrinqkjpuo) .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+:where(#rrinqkjpuo) .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+:where(#rrinqkjpuo) .gt_left {
+  text-align: left;
+}
+
+:where(#rrinqkjpuo) .gt_center {
+  text-align: center;
+}
+
+:where(#rrinqkjpuo) .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(#rrinqkjpuo) .gt_font_normal {
+  font-weight: normal;
+}
+
+:where(#rrinqkjpuo) .gt_font_bold {
+  font-weight: bold;
+}
+
+:where(#rrinqkjpuo) .gt_font_italic {
+  font-style: italic;
+}
+
+:where(#rrinqkjpuo) .gt_super {
+  font-size: 65%;
+}
+
+:where(#rrinqkjpuo) .gt_footnote_marks {
+  font-style: italic;
+  font-weight: normal;
+  font-size: 75%;
+  vertical-align: 0.4em;
+}
+
+:where(#rrinqkjpuo) .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+:where(#rrinqkjpuo) .gt_indent_1 {
+  text-indent: 5px;
+}
+
+:where(#rrinqkjpuo) .gt_indent_2 {
+  text-indent: 10px;
+}
+
+:where(#rrinqkjpuo) .gt_indent_3 {
+  text-indent: 15px;
+}
+
+:where(#rrinqkjpuo) .gt_indent_4 {
+  text-indent: 20px;
+}
+
+:where(#rrinqkjpuo) .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="4" class="gt_heading gt_title gt_font_normal" style=""><strong>Which cars hold their value on gumtree?</strong></td>
+    </tr>
+    <tr>
+      <td colspan="4" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="">15 most popular makes and models on gumtree
+<em>Car purchased at 5 years old, with 30k km, driven for three years</em></td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col">Make &amp; model</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">Purchase price</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">Sale price</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col">Retained value</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td class="gt_row gt_left">Nissan NP200</td>
+<td class="gt_row gt_right">R166,000</td>
+<td class="gt_row gt_right">R118,000</td>
+<td class="gt_row gt_right" style="background-color: #35B0AB; color: #000000;">71.15%</td></tr>
+    <tr><td class="gt_row gt_left">Kia Picanto</td>
+<td class="gt_row gt_right">R153,000</td>
+<td class="gt_row gt_right">R103,000</td>
+<td class="gt_row gt_right" style="background-color: #77C6AB; color: #000000;">67.20%</td></tr>
+    <tr><td class="gt_row gt_left">Volkswagen Golf</td>
+<td class="gt_row gt_right">R456,000</td>
+<td class="gt_row gt_right">R283,000</td>
+<td class="gt_row gt_right" style="background-color: #ADDFAF; color: #000000;">62.01%</td></tr>
+    <tr><td class="gt_row gt_left">Volkswagen Polo Vivo</td>
+<td class="gt_row gt_right">R198,000</td>
+<td class="gt_row gt_right">R123,000</td>
+<td class="gt_row gt_right" style="background-color: #ADDFAF; color: #000000;">61.94%</td></tr>
+    <tr><td class="gt_row gt_left">Ford EcoSport</td>
+<td class="gt_row gt_right">R265,000</td>
+<td class="gt_row gt_right">R160,000</td>
+<td class="gt_row gt_right" style="background-color: #BBE6B2; color: #000000;">60.29%</td></tr>
+    <tr><td class="gt_row gt_left">Toyota Corolla Quest</td>
+<td class="gt_row gt_right">R207,000</td>
+<td class="gt_row gt_right">R123,000</td>
+<td class="gt_row gt_right" style="background-color: #C3E9B3; color: #000000;">59.44%</td></tr>
+    <tr><td class="gt_row gt_left">Toyota Corolla</td>
+<td class="gt_row gt_right">R250,000</td>
+<td class="gt_row gt_right">R145,000</td>
+<td class="gt_row gt_right" style="background-color: #CCEDB6; color: #000000;">58.23%</td></tr>
+    <tr><td class="gt_row gt_left">Mercedes-Benz C-Class</td>
+<td class="gt_row gt_right">R667,000</td>
+<td class="gt_row gt_right">R375,000</td>
+<td class="gt_row gt_right" style="background-color: #DAF2C0; color: #000000;">56.16%</td></tr>
+    <tr><td class="gt_row gt_left">Toyota Fortuner</td>
+<td class="gt_row gt_right">R547,000</td>
+<td class="gt_row gt_right">R305,000</td>
+<td class="gt_row gt_right" style="background-color: #DCF3C2; color: #000000;">55.73%</td></tr>
+    <tr><td class="gt_row gt_left">Hyundai i20</td>
+<td class="gt_row gt_right">R218,000</td>
+<td class="gt_row gt_right">R119,000</td>
+<td class="gt_row gt_right" style="background-color: #E3F6C7; color: #000000;">54.71%</td></tr>
+    <tr><td class="gt_row gt_left">Volkswagen Polo</td>
+<td class="gt_row gt_right">R278,000</td>
+<td class="gt_row gt_right">R144,000</td>
+<td class="gt_row gt_right" style="background-color: #F4FBD7; color: #000000;">51.76%</td></tr>
+    <tr><td class="gt_row gt_left">Ford Ranger</td>
+<td class="gt_row gt_right">R495,000</td>
+<td class="gt_row gt_right">R248,000</td>
+<td class="gt_row gt_right" style="background-color: #F7FCE3; color: #000000;">50.12%</td></tr>
+    <tr><td class="gt_row gt_left">Toyota Hilux</td>
+<td class="gt_row gt_right">R499,000</td>
+<td class="gt_row gt_right">R248,000</td>
+<td class="gt_row gt_right" style="background-color: #F8FDE5; color: #000000;">49.75%</td></tr>
+    <tr><td class="gt_row gt_left">Toyota Yaris</td>
+<td class="gt_row gt_right">R244,000</td>
+<td class="gt_row gt_right">R116,000</td>
+<td class="gt_row gt_right" style="background-color: #FDFEF7; color: #000000;">47.35%</td></tr>
+    <tr><td class="gt_row gt_left">BMW 3 Series</td>
+<td class="gt_row gt_right">R589,000</td>
+<td class="gt_row gt_right">R272,000</td>
+<td class="gt_row gt_right" style="background-color: #FFFFFF; color: #000000;">46.20%</td></tr>
+  </tbody>
+  
+  <tfoot class="gt_footnotes">
+    <tr>
+      <td class="gt_footnote" colspan="4"> Note: Retained value shows sale price as a percentage of purchase price</td>
+    </tr>
+  </tfoot>
+</table>
+</div>
+</div>
+</div>
+<p>There is a surprising amount of dispersion in how much value is held among the 15 most popular makes and models. It ranges from north of 70 percent for the Kia Picanto, to below 50 percent for the BMW 3 series.</p>
+<p>In addition, we can see that relatively cheap cars, like the Nissan NP200 and Kia Picanto hold their value well. Further, the makes and models which are highly desired like the WV Golf and Polo Vivo also hold their value well. The WV Golf stands out as relatively expensive (nearly 3X the asked purchase price of the Kia Picanto) but still holds 62 percent of its value 45,000 km and three years later.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    target: function(trigger) {
+      return trigger.previousElementSibling;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,325 @@
+---
+title: "ML Modelling of value drop off"
+format: html
+---
+
+## Purpose
+
+I want to create a model of price drop off by year.
+
+Basically, I want to create a shiny app where I have inputs, and you can see how much value your car will lose as a percentage of it's purchase price. We don't have to do much more than averages I don't think?
+
+Say I buy a Polo from 2020, it has 20,000 km on the clock.
+
+I drive it for 3 years, putting on 15,000 km per year. Then I advertise it. What will the price be then?
+
+Then basically I do this model for a bunch of cars and see which has the largest drop off?
+
+I can do this with just linear regression I think?
+
+We train a model on price, kilometers, etc. 
+
+### Proof of concept
+
+First let's create a visualisation of what we want to have at the end of it.
+
+```{r}
+library(tidyverse)
+theme_set(theme_light())
+
+df <- read_rds("clean_data/df_complete_2022-12-27-02-53-pm.rds")
+
+```
+
+```{r}
+df %>%
+  filter(make_model == "Volkswagen Polo") %>%
+  ggplot(aes(kilometers, price)) +
+  geom_point(alpha = .3) +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "ZAR "), limits = c(0, NA)) +
+  scale_x_continuous(labels = scales::number_format())
+```
+
+
+```{r}
+df %>% 
+  count(make_model, sort = T)
+```
+
+What do I want to do?
+
+If I create a tibble with the most popular makes and models, and then pretend that they are all being bought at 
+
+Say I buy a Polo from 2020, it has 30,000 km on the clock.
+
+I drive it for 3 years, putting on 15,000 km per year. Then I advertise it. What will the price be then?
+
+```{r}
+model <- read_rds("car_price_prediction/final_lasso_model.rds")
+
+input <- tibble(
+  title = "Title",
+  "make_model" = "Volkswagen Polo",
+  "seller_type" = "Professional Seller",
+  "province" = "Western Cape",
+  "kilometers" = 30000,
+  "colour" = "White",
+  "year" = 2017,
+  "n_photos" = 12,
+  "body_type" = "Hatchback",
+  "fuel_type" = "Petrol",
+  "transmission" = "Manual"
+)
+
+prediction <- predict(
+  model,
+  input
+)
+
+prediction <- prediction %>%
+  mutate(
+    .pred = exp(.pred),
+    .pred = round(.pred, -3),
+    .pred = scales::number(.pred, prefix = "R")
+  ) %>%
+  pull(.pred)
+```
+
+
+```{r}
+makes_models <- df %>%
+  count(make_model, sort = T) %>%
+  slice_head(n = 15) %>% 
+  select(make_model)
+
+seller_types <- df %>%
+  distinct(seller_type)
+
+fuel_types <- tibble(fuel_type = c("Petrol", "Diesel"))
+
+kilometers_in <- tibble(kilometers = c(30000, 75000))
+year_in <- tibble(year = c(2017, 2020))
+
+inputs <- input %>%
+  select(-c(make_model, year, kilometers)) %>%
+  bind_cols(makes_models) %>%
+  crossing(kilometers_in, year_in)
+
+predictions <- inputs %>%
+  nest(data = everything()) %>%
+  mutate(fit = map(data, ~ predict(model, .x))) %>%
+  unnest(fit) %>%
+  mutate(
+    .pred = exp(.pred),
+    .pred = round(.pred, -3)
+  ) %>% 
+  rename(pred_price = .pred)
+
+predictions <- predictions %>%
+  bind_cols(inputs %>%
+    select(
+      make_model,
+      kilometers,
+      year
+    )) %>%
+  select(-data)
+
+predictions %>%
+  mutate(flag = case_when(
+    kilometers == 30000 & year == 2020 ~ "buy_price",
+    kilometers == 75000 & year == 2017 ~ "sell_price"
+  )) %>%
+  filter(!is.na(flag)) %>%
+  select(make_model, pred_price, flag) %>%
+  pivot_wider(names_from = flag, values_from = pred_price) %>%
+  mutate(
+    diff_price = buy_price - sell_price,
+    pct_dep = diff_price / buy_price
+  )
+
+
+predictions %>% 
+  filter(seller_type == "Professional Seller",
+         fuel_type == "Petrol") %>% 
+  mutate(make_model = fct_reorder(make_model, pred_price)) %>% 
+  ggplot(aes(pred_price, make_model)) +
+  geom_col() +
+  scale_x_continuous(labels = scales::dollar_format(prefix = "ZAR "), limits = c(0, NA))
+```
+
+What if instead of using the model we simply take some averages.
+
+
+```{r}
+df_buy <- df %>%
+  filter(make_model %in% makes_models$make_model) %>%
+  group_by(make_model) %>%
+  filter(
+    between(kilometers, 20000, 40000),
+    between(year, 2017, 2020)
+  ) %>%
+  summarise(mean_price_buy = mean(price),
+            n_buy = n())
+
+
+df_sell <- df %>%
+  filter(make_model %in% makes_models$make_model) %>%
+  group_by(make_model) %>%
+  filter(
+    between(kilometers, 65000, 85000),
+    between(year, 2012, 2015)
+  ) %>%
+  summarise(mean_price_sell = mean(price),
+            n_sell = n())
+
+df_cars <- df_buy %>% 
+  inner_join(df_sell)
+
+df_cars <- df_cars %>% 
+  select(make_model, contains("price")) %>% 
+  pivot_longer(-make_model)
+
+df_cars <- df_cars %>% 
+  group_by(name) %>% 
+  mutate(rank = rank(desc(value), ties.method = "average")) %>% 
+  ungroup() %>% 
+  mutate(price = scales::dollar(round(value, digits = -3), prefix = "ZAR ")) 
+
+
+labels_left <- df_cars %>% 
+  filter(name == "mean_price_buy") %>% 
+  mutate(left_rank = rank) %>% 
+  select(make_model, left_rank, price_buy = price)
+
+labels_right <- df_cars %>% 
+  filter(name == "mean_price_sell") %>% 
+  mutate(right_rank = rank) %>% 
+  select(make_model, right_rank, price_sell = price)
+
+df_cars <- df_cars %>% 
+  inner_join(labels_left) %>% 
+  inner_join(labels_right)
+
+df_cars %>%
+  ggplot(aes(name, rank, colour = right_rank, group = make_model)) +
+  geom_line(size = 2.8, aes(name, rank, group = make_model), colour = "black") +
+  geom_line(size = 2) +
+  geom_text(aes(
+    x = "mean_price_buy",
+    y = left_rank,
+    label = paste0(left_rank, ". ", make_model, " (", price_buy, ")")
+  ),
+  colour = "black",
+  hjust = 1.1,
+  cex = 3
+  ) +
+  geom_text(aes(
+    x = "mean_price_sell",
+    y = right_rank,
+    label = paste0(left_rank, ". ", make_model, " (", price_sell, ")")
+  ),
+  colour = "black",
+  hjust = 0,
+  cex = 3
+  ) +
+  scale_y_reverse() +
+  scale_color_gradient2(
+    low = "blue",
+    high = "red",
+    mid = "pink",
+    midpoint = 8
+  ) +
+  # scale_x_continuous(breaks = c(2010, 2012, 2015, 2017, 2018, 2019)) +
+  # coord_cartesian(xlim = c(2009, 2020)) +
+  theme(
+    legend.position = "none",
+    panel.grid.major.y = element_blank(),
+    panel.grid.minor.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    axis.text.y = element_blank()
+  ) +
+  labs(
+    x = NULL,
+    y = NULL
+  )
+
+```
+
+Devaluation
+
+```{r}
+df_cars <- df_buy %>% 
+  inner_join(df_sell)
+
+df_cars %>%
+  mutate(pct_decrease = (mean_price_buy - mean_price_sell) / mean_price_buy) %>%
+  mutate(make_model = fct_reorder(make_model, pct_decrease)) %>%
+  ggplot(aes(pct_decrease, make_model)) +
+  geom_col()
+
+df_cars %>%
+  mutate(pct_decrease = (mean_price_buy - mean_price_sell) / mean_price_buy) %>%
+  mutate(make_model = fct_reorder(make_model, pct_decrease)) %>%
+  ggplot() +
+  geom_point(aes(mean_price_buy, make_model), colour = "red") +
+  geom_point(aes(mean_price_sell, make_model), colour = "blue")
+```
+
+
+
+```{r}
+library(ggrepel)
+
+df_cars <- df_buy %>% 
+  inner_join(df_sell)
+
+df_cars <- df_cars %>% 
+  select(make_model, contains("price")) %>% 
+  pivot_longer(-make_model) %>% 
+  mutate(price = scales::dollar(round(value, digits = -3), prefix = "ZAR ")) 
+
+
+labels_left <- df_cars %>% 
+  filter(name == "mean_price_buy") %>% 
+  select(make_model, price_buy = price, mean_value_buy = value)
+
+labels_right <- df_cars %>% 
+  filter(name == "mean_price_sell") %>% 
+  select(make_model, price_sell = price, mean_value_sell = value)
+
+df_cars <- df_cars %>% 
+  inner_join(labels_left) %>% 
+  inner_join(labels_right)
+
+df_cars %>%
+  ggplot(aes(name, value, colour = make_model, group = make_model)) +
+  geom_point() +
+  geom_line() +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "ZAR")) +
+  scale_color_viridis_d() +
+  theme(legend.position = "none") +
+  geom_text(aes(
+    x = "mean_price_buy",
+    y = mean_value_buy,
+    label = paste0(make_model, "\n(", price_buy, ")")
+  ),
+  check_overlap = T,
+  colour = "black",
+  hjust = 1.1,
+  cex = 3
+  ) +
+  geom_text(aes(
+    x = "mean_price_sell",
+    y = mean_value_sell,
+    label = paste0(make_model, "\n(", price_sell, ")")
+  ),
+  check_overlap = T,
+  colour = "black",
+  hjust = 0,
+  cex = 3
+  )
+```
+
+
+
